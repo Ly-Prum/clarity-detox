@@ -39,7 +39,7 @@ export const useStore = create<AppStore>()(
     (set) => ({
       sessions: [],
       profile: null,
-      colorTheme: 'blue',
+      colorTheme: 'sand',
       isAuthenticated: false,
       currentUser: null,
       diagnosisResults: [],

@@ -4,40 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useStore } from '@/lib/store'
 import { LogOut } from 'lucide-react'
 
-const COLOR_GROUPS = {
-  'シンプル': [
-    { id: 'blue',    label: 'ブルー',    hex: '#3b82f6' },
-    { id: 'sky',     label: 'スカイ',    hex: '#0ea5e9' },
-    { id: 'teal',    label: 'ティール',  hex: '#14b8a6' },
-    { id: 'emerald', label: 'エメラルド',hex: '#10b981' },
-    { id: 'indigo',  label: 'インジゴ',  hex: '#6366f1' },
-    { id: 'purple',  label: 'パープル',  hex: '#8b5cf6' },
-    { id: 'rose',    label: 'ローズ',    hex: '#f43f5e' },
-  ],
-  'タン・ベージュ': [
-    { id: 'beige',      label: 'ベージュ',    hex: '#c8956c' },
-    { id: 'sand',       label: 'サンド',      hex: '#c9a96e' },
-    { id: 'mustard',    label: 'マスタード',  hex: '#ca8a04' },
-    { id: 'terracotta', label: 'テラコッタ',  hex: '#c2694f' },
-    { id: 'caramel',    label: 'キャラメル',  hex: '#b47c3a' },
-    { id: 'khaki',      label: 'カーキ',      hex: '#8b9c4a' },
-  ],
-  'パステル': [
-    { id: 'pastel-pink',     label: 'ピンク',     hex: '#ec4899' },
-    { id: 'pastel-lavender', label: 'ラベンダー', hex: '#8b5cf6' },
-    { id: 'pastel-lilac',    label: 'ライラック', hex: '#a855f7' },
-    { id: 'pastel-mint',     label: 'ミント',     hex: '#10b981' },
-    { id: 'pastel-sky',      label: 'スカイ',     hex: '#0ea5e9' },
-    { id: 'pastel-peach',    label: 'ピーチ',     hex: '#f97316' },
-    { id: 'pastel-butter',   label: 'バター',     hex: '#ca8a04' },
-  ],
-} as const
-
-type GroupKey = keyof typeof COLOR_GROUPS
-
 export default function SettingsPage() {
-  const { colorTheme, setColorTheme, currentUser, login, logout, sessions, clearSessions } = useStore()
-  const [activeGroup, setActiveGroup] = useState<GroupKey>('シンプル')
+  const { currentUser, login, logout, sessions, clearSessions } = useStore()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const router = useRouter()
@@ -61,8 +29,6 @@ export default function SettingsPage() {
   function cancelEdit() {
     setEditingName(false)
   }
-
-  const currentColors = COLOR_GROUPS[activeGroup]
 
   return (
     <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -112,53 +78,6 @@ export default function SettingsPage() {
               {sessions.length}セッション記録済み
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* アクセントカラー */}
-      <div className="card" style={{ padding: '18px 18px' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 14 }}>アクセントカラー</div>
-
-        {/* タブ */}
-        <div className="period-selector" style={{ marginBottom: 14 }}>
-          {(Object.keys(COLOR_GROUPS) as GroupKey[]).map(group => (
-            <button
-              key={group}
-              className={`period-btn${activeGroup === group ? ' active' : ''}`}
-              onClick={() => setActiveGroup(group)}
-            >
-              {group}
-            </button>
-          ))}
-        </div>
-
-        {/* スウォッチ */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {currentColors.map(({ id, label, hex }) => {
-            const active = colorTheme === id
-            return (
-              <button
-                key={id}
-                title={label}
-                onClick={() => setColorTheme(id)}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                  padding: '8px 10px', borderRadius: 12, minWidth: 54,
-                  border: `2px solid ${active ? hex : 'var(--border)'}`,
-                  background: active ? `${hex}14` : 'transparent',
-                  cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
-                }}
-              >
-                <div style={{
-                  width: 28, height: 28, borderRadius: '50%', background: hex,
-                  boxShadow: active ? `0 0 0 3px ${hex}40` : 'none',
-                }} />
-                <span style={{ fontSize: 9, color: active ? hex : 'var(--text-faint)', fontWeight: active ? 700 : 400, whiteSpace: 'nowrap' }}>
-                  {label}
-                </span>
-              </button>
-            )
-          })}
         </div>
       </div>
 
