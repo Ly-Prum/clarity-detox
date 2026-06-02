@@ -46,9 +46,9 @@ function ScoreRing({ score, noSession }: { score: number; noSession?: boolean })
       <svg width={214} height={214} viewBox="0 0 214 214"
         style={{ transform: 'rotate(-90deg)', display: 'block' }}>
         <circle cx={107} cy={107} r={R} fill="none"
-          stroke="rgba(255,255,255,0.18)" strokeWidth={18} />
+          stroke="rgba(180,149,108,0.18)" strokeWidth={18} />
         <circle cx={107} cy={107} r={R} fill="none"
-          stroke="rgba(255,255,255,0.95)" strokeWidth={18}
+          stroke="#b4956c" strokeWidth={18}
           strokeLinecap="round"
           strokeDasharray={CIRC}
           strokeDashoffset={offset}
@@ -60,16 +60,16 @@ function ScoreRing({ score, noSession }: { score: number; noSession?: boolean })
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 2,
       }}>
-        <Brain size={26} color="rgba(255,255,255,0.82)" strokeWidth={1.8} />
+        <Brain size={26} color="rgba(180,149,108,0.7)" strokeWidth={1.8} />
         {noSession ? (
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 1.6, marginTop: 6, padding: '0 16px' }}>
+          <div style={{ fontSize: 13, color: '#8a7060', textAlign: 'center', lineHeight: 1.6, marginTop: 6, padding: '0 16px' }}>
             今日はまだ<br />未記録です
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 54, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
-            <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)' }}>/100</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>達成率 {display}%</div>
+            <div style={{ fontSize: 54, fontWeight: 900, color: '#3d2010', lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
+            <div style={{ fontSize: 15, color: '#8a7060' }}>/100</div>
+            <div style={{ fontSize: 12, color: '#a89a8a', marginTop: 2 }}>達成率 {display}%</div>
           </>
         )}
       </div>
@@ -168,7 +168,6 @@ export default function HomePage() {
     : null
   const today = new Date().toISOString().split('T')[0]
   const todaySession = sessions.find(s => s.created_at.startsWith(today))
-  const initials = currentUser?.name?.slice(0, 2).toUpperCase() ?? 'ME'
 
   /* ── オンボーディング ── */
   if (!sessions.length) {
@@ -223,39 +222,42 @@ export default function HomePage() {
   return (
     <div style={{ background: 'var(--bg)' }}>
 
-      {/* ─── グラデーションヒーロー ─── */}
-      <div style={{ background: 'var(--primary)', padding: '18px 20px 28px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 10%, rgba(255,255,255,0.18) 0%, transparent 55%)', pointerEvents: 'none' }} />
+      {/* ─── ヒーロー（薄いベージュ） ─── */}
+      <div style={{ background: 'linear-gradient(160deg, #fdf8f2 0%, #f2e6d8 100%)', padding: '18px 20px 24px', position: 'relative', overflow: 'hidden', borderBottom: '1px solid #ece0d0' }}>
 
         {/* ヘッダー行 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, position: 'relative' }}>
-          <div style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', fontSize: 12, color: '#fff', fontWeight: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+          <div style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(180,149,108,0.15)', fontSize: 12, color: '#b4956c', fontWeight: 700 }}>
             🔥 {streak}日連続
           </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>
+          <div style={{ fontSize: 12, color: '#8a7060', fontWeight: 500 }}>
             {new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}
           </div>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
-            {initials}
-          </div>
+          {/* 設定へのリンク */}
+          <Link href="/settings" style={{ textDecoration: 'none' }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', background: '#fff', border: '1.5px solid rgba(180,149,108,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/clarity-logo.png" alt="設定" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+            </div>
+          </Link>
         </div>
 
         {/* リング */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
           <ScoreRing score={todaySession?.analysis.clarity_score ?? 0} noSession={!todaySession} />
         </div>
 
         {/* 統計バー */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {[
             { label: '連続記録', value: `${streak}日`, icon: '🔥' },
             { label: '総セッション', value: `${sessions.length}回`, icon: '📊' },
           ].map(({ label, value, icon }) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div key={label} style={{ background: 'rgba(180,149,108,0.12)', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 22 }}>{icon}</span>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 3 }}>{label}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#3d2010', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: 11, color: '#8a7060', marginTop: 3 }}>{label}</div>
               </div>
             </div>
           ))}
