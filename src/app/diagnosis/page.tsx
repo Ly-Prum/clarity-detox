@@ -162,11 +162,8 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
           }}>
             <Sparkles size={26} color="#fff" />
           </div>
-          <p style={{ fontSize: 12, color: '#b4956c', fontWeight: 700, marginBottom: 6, letterSpacing: '0.04em' }}>
-            Clarity Discovery
-          </p>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2d1f0f', marginBottom: 12, letterSpacing: '-0.02em', lineHeight: 1.4 }}>
-            お母さんへ
+            Clarity Discovery
           </h1>
           <p style={{ fontSize: 14, color: '#7a6a58', lineHeight: 1.9 }}>
             選択式の質問に答えるだけで、<br />
@@ -431,7 +428,7 @@ function AnalyzingScreen() {
           分析しています…
         </h2>
         <p style={{ fontSize: 13, color: '#7a6a58', lineHeight: 1.8 }}>
-          お母さんの回答から<br />自己理解の地図をつくっています
+          あなたの回答から<br />自己理解の地図をつくっています
         </p>
       </div>
     </div>
@@ -500,7 +497,7 @@ function ResultScreen({
             boxShadow: '0 6px 24px rgba(180,149,108,0.3)',
           }}>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 6 }}>
-              お母さんへ
+              結果サマリー
             </div>
             <p style={{ fontSize: 14, color: '#fff', lineHeight: 1.9, fontWeight: 500 }}>
               {analysis.summary}
