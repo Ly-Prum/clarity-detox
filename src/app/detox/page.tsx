@@ -160,60 +160,94 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
   )
 }
 
-function RadarChart({ balance, dominant, isDark }: { balance: Record<BalanceKey, number>; dominant: BalanceKey | null; isDark: boolean }) {
+function BalanceMap({ balance, dominant, isDark }: { balance: Record<BalanceKey, number>; dominant: BalanceKey | null; isDark: boolean }) {
   const keys = Object.keys(balance) as BalanceKey[]
-  const size = 240
-  const cx = size / 2
-  const cy = size / 2
-  const maxR = 80
-  const labelR = 100
+  const sorted = [...keys].sort((a, b) => balance[b] - balance[a])
+
+  // Radar
+  const cx = 130, cy = 120, maxR = 82, labelR = 106
   const n = keys.length
-
   const angle = (i: number) => (i * 2 * Math.PI / n) - Math.PI / 2
-  const pt = (r: number, i: number) => ({
-    x: cx + r * Math.cos(angle(i)),
-    y: cy + r * Math.sin(angle(i)),
-  })
-
-  const gridLevels = [25, 50, 75, 100]
-  const shortLabel = (k: BalanceKey) => k.replace('過多', '').replace('ループ', '').replace('不足', '')
-
-  const dataPoints = keys.map((k, i) => {
-    const r = (balance[k] / 100) * maxR
-    const p = pt(r, i)
-    return `${p.x},${p.y}`
-  }).join(' ')
+  const pt = (r: number, i: number) => ({ x: cx + r * Math.cos(angle(i)), y: cy + r * Math.sin(angle(i)) })
+  const gridColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'
+  const dataPath = keys.map((k, i) => {
+    const p = pt((balance[k] / 100) * maxR, i)
+    return `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
+  }).join(' ') + 'Z'
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
-      {gridLevels.map(level => {
-        const pts = keys.map((_, i) => { const p = pt((level / 100) * maxR, i); return `${p.x},${p.y}` }).join(' ')
-        return <polygon key={level} points={pts} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-      })}
-      {keys.map((_, i) => {
-        const p = pt(maxR, i)
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-      })}
-      <polygon points={dataPoints} fill="rgba(124,106,239,0.18)" stroke="#7c6aef" strokeWidth="2" />
-      {keys.map((k, i) => {
-        const r = (balance[k] / 100) * maxR
-        const p = pt(r, i)
-        const color = BALANCE_COLORS[k]
-        return <circle key={i} cx={p.x} cy={p.y} r={5} fill={color} stroke="#08090f" strokeWidth="1.5" />
-      })}
-      {keys.map((k, i) => {
-        const p = pt(labelR, i)
-        const isMain = k === dominant
-        return (
-          <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-            fontSize={isMain ? 12 : 11} fontWeight={isMain ? 700 : 400}
-            fill={isMain ? BALANCE_COLORS[k] : (isDark ? 'rgba(255,255,255,0.45)' : '#525770')}
-          >
-            {shortLabel(k)}
-          </text>
-        )
-      })}
-    </svg>
+    <div>
+      {/* Radar Chart */}
+      <svg viewBox="0 0 260 240" style={{ width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' }}>
+        <defs>
+          <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#7c6aef" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#7c6aef" stopOpacity="0.05" />
+          </radialGradient>
+        </defs>
+        {[25, 50, 75, 100].map(lv => {
+          const pts = keys.map((_, i) => { const p = pt((lv / 100) * maxR, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
+          return <polygon key={lv} points={pts} fill={lv < 100 ? (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)') : 'none'}
+            stroke={gridColor} strokeWidth={lv === 100 ? 1.5 : 0.8} />
+        })}
+        {[0, 25, 50, 75].map(lv => (
+          <text key={lv} x={cx + 4} y={cy - (lv / 100) * maxR - 2} fontSize={7}
+            fill={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'} textAnchor="start">{lv}</text>
+        ))}
+        {keys.map((_, i) => {
+          const p = pt(maxR, i)
+          return <line key={i} x1={cx} y1={cy} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} stroke={gridColor} strokeWidth={0.8} />
+        })}
+        <path d={dataPath} fill="url(#radarFill)" stroke="#7c6aef" strokeWidth={2.5} strokeLinejoin="round" />
+        {keys.map((k, i) => {
+          const r = (balance[k] / 100) * maxR
+          const p = pt(r, i)
+          const color = BALANCE_COLORS[k]
+          const isMain = k === dominant
+          return (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r={isMain ? 7 : 5} fill={color} stroke={isDark ? '#08090f' : '#fff'} strokeWidth={2} />
+              {isMain && <circle cx={p.x} cy={p.y} r={11} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray="3 2" />}
+            </g>
+          )
+        })}
+        {keys.map((k, i) => {
+          const p = pt(labelR, i)
+          const isMain = k === dominant
+          const color = isMain ? BALANCE_COLORS[k] : (isDark ? 'rgba(255,255,255,0.55)' : '#4a4a60')
+          const label = k.replace('過多', '').replace('ループ', '').replace('不足', '')
+          return (
+            <text key={i} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle"
+              fontSize={isMain ? 11.5 : 10} fontWeight={isMain ? 800 : 500} fill={color}>
+              {label}
+            </text>
+          )
+        })}
+      </svg>
+
+      {/* Bar chart breakdown */}
+      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {sorted.map(k => {
+          const val = balance[k]
+          const color = BALANCE_COLORS[k]
+          const isMain = k === dominant
+          return (
+            <div key={k}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: isMain ? 700 : 500, color: isMain ? color : 'var(--text-sub)' }}>{k}</span>
+                  {isMain && <span style={{ fontSize: 9, fontWeight: 700, color, background: `${color}18`, padding: '1px 6px', borderRadius: 8, border: `1px solid ${color}30` }}>主要因</span>}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color }}>{val}</span>
+              </div>
+              <div style={{ height: 7, background: isDark ? 'rgba(255,255,255,0.1)' : '#eff0f6', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 4, transition: 'width 1s ease' }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -370,8 +404,12 @@ export default function DetoxPage() {
               </div>
 
               <div style={{ padding: '14px 16px', borderRadius: 12, background: 'var(--bg3)', borderLeft: '3px solid var(--primary)' }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--primary)', marginBottom: 6, letterSpacing: '0.5px' }}>今の脳内状態</div>
-                <p style={{ fontSize: 16, color: 'var(--text)', lineHeight: 1.8 }}>{analysis.summary}</p>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 8, letterSpacing: '0.5px' }}>今の脳内状態</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {analysis.summary.split('。').filter(Boolean).map((s, i) => (
+                    <p key={i} style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75, margin: 0 }}>{s}。</p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -382,15 +420,19 @@ export default function DetoxPage() {
           <div className="card fade-up-3" style={{ padding: 20, ...nightCard }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 4, letterSpacing: '1px', textTransform: 'uppercase' }}>バランスマップ</div>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-              <RadarChart balance={analysis.balance} dominant={analysis.dominant} isDark={isDark} />
+              <BalanceMap balance={analysis.balance} dominant={analysis.dominant} isDark={isDark} />
             </div>
           </div>
 
           <div className="card fade-up-4" style={{ padding: 20, ...nightCard }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 12, letterSpacing: '1px', textTransform: 'uppercase' }}>AIアドバイス</div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div style={{ fontSize: 24, flexShrink: 0 }}>💡</div>
-              <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.85 }}>{analysis.advice}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 20 }}>💡</span>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase' }}>AIアドバイス</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {analysis.advice.split('。').filter(Boolean).map((s, i) => (
+                <p key={i} style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.8, margin: 0 }}>{s}。</p>
+              ))}
             </div>
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text-faint)' }}>
               次回のセッションで変化を確認しましょう
@@ -399,9 +441,9 @@ export default function DetoxPage() {
         </div>
 
         {/* ボタン */}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button className="btn-ghost" onClick={handleReset}>もう一度書く</button>
-          <button className="btn-primary" onClick={handleSave}>完了・保存</button>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+          <button className="btn-ghost" onClick={handleReset} style={{ flex: 1 }}>もう一度書く</button>
+          <button className="btn-primary" onClick={handleSave} style={{ flex: 2 }}>完了・保存</button>
         </div>
 
         <style>{`
