@@ -461,69 +461,85 @@ export default function DetoxPage() {
   }
 
   return (
-    <div className="page-wrap detox-wrap" style={{ maxWidth: 800, margin: '0 auto', position: 'relative' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'radial-gradient(ellipse 160% 120% at 50% 0%, #0d1130 0%, #050814 60%, #000008 100%)',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* 星 */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+        {Array.from({ length: 100 }, (_, i) => (
+          <circle key={i}
+            cx={`${(i * 37 + 11) % 100}%`}
+            cy={`${(i * 53 + 7) % 100}%`}
+            r={i % 5 === 0 ? 1.4 : 0.65}
+            fill="white"
+            opacity={0.12 + (i % 7) * 0.11}
+            style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.8}s ${(i % 7) * 0.5}s ease-in-out infinite` } : undefined}
+          />
+        ))}
+      </svg>
 
-      {/* ── 夜空セクション ── */}
-      <div style={{
-        position: 'relative', overflow: 'hidden',
-        background: 'radial-gradient(ellipse 160% 100% at 50% 0%, #0d1130 0%, #050814 55%, #000005 100%)',
-        borderRadius: '0 0 32px 32px',
-        paddingBottom: 32,
-      }}>
-        {/* 星（セクション内に収まる絶対配置） */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-          {Array.from({ length: 80 }, (_, i) => (
-            <circle key={i}
-              cx={`${(i * 37 + 11) % 100}%`}
-              cy={`${(i * 53 + 7) % 100}%`}
-              r={i % 5 === 0 ? 1.2 : 0.6}
-              fill="white"
-              opacity={0.15 + (i % 6) * 0.12}
-              style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.7}s ${(i % 7) * 0.4}s ease-in-out infinite` } : undefined}
-            />
-          ))}
-        </svg>
-
-        {/* 月 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '32px 0 12px', position: 'relative' }}>
-          <MoonOrb />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>
-              脳内デトックス
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>
-              今頭の中にあることを、そのまま書き出してください。<br />
-              判断しなくて大丈夫です。
-            </p>
+      {/* 月 */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '32px 0 16px', position: 'relative' }}>
+        <MoonOrb />
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>
+            脳内デトックス
           </div>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>
+            今頭の中にあることを、そのまま書き出してください。<br />
+            判断しなくて大丈夫です。
+          </p>
         </div>
       </div>
 
-      <div className="fade-up">
-        <div className="card" style={{ padding: 28, ...nightCard }}>
+      {/* 入力カード（グラスモーフィズム） */}
+      <div className="fade-up" style={{ padding: '0 16px', position: 'relative' }}>
+        <div style={{
+          borderRadius: 20,
+          background: 'rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          padding: 24,
+        }}>
           <textarea
-            className="input"
             placeholder="今、頭の中にあることを自由に書いてください&#10;&#10;例：明日の会議が心配。タスクが溜まっている気がする。あの件どうなったっけ..."
             value={text}
             onChange={e => setText(e.target.value)}
-            style={{ minHeight: 240, fontSize: 16, lineHeight: 1.8 }}
+            style={{
+              width: '100%', minHeight: 220, fontSize: 15, lineHeight: 1.8,
+              background: 'transparent', border: 'none', outline: 'none',
+              color: '#f0f1f8', fontFamily: 'inherit', resize: 'none',
+            }}
             autoFocus
           />
-          <div style={{ marginTop: 14 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 10 }}>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
               {charCount > 0 ? `${charCount}文字` : '20文字以上書くと精度が上がります'}
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button className="btn-ghost" onClick={handleDemo} style={{ fontSize: 12, flexShrink: 0 }}>デモを見る</button>
+              <button
+                onClick={handleDemo}
+                style={{
+                  fontSize: 12, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '9px 16px', borderRadius: 24,
+                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+              >
+                デモを見る
+              </button>
               <button
                 className="btn-grad"
                 onClick={handleAnalyze}
                 disabled={loading || text.trim().length < 5}
-                style={{ opacity: text.trim().length < 5 ? 0.5 : 1, flex: 1, justifyContent: 'center' }}
+                style={{ opacity: text.trim().length < 5 ? 0.4 : 1, flex: 1, justifyContent: 'center' }}
               >
                 {loading ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
                     分析中...
                   </span>
                 ) : '✦ 脳内を分析する'}
@@ -533,7 +549,7 @@ export default function DetoxPage() {
         </div>
 
         {error && (
-          <div style={{ marginTop: 12, padding: '12px 18px', borderRadius: 'var(--r-sm)', background: 'rgba(244,114,182,0.1)', color: 'var(--rose)', fontSize: 13 }}>
+          <div style={{ marginTop: 12, padding: '12px 18px', borderRadius: 12, background: 'rgba(244,114,182,0.15)', color: '#f9a8d4', fontSize: 13, border: '1px solid rgba(244,114,182,0.2)' }}>
             {error}
           </div>
         )}
@@ -541,13 +557,7 @@ export default function DetoxPage() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .detox-wrap {
-          --text-faint: ${isDark ? 'rgba(255,255,255,0.52)' : 'var(--text-faint)'};
-          --text-sub:   ${isDark ? 'rgba(255,255,255,0.78)' : 'var(--text-sub)'};
-          --text:       ${isDark ? '#f0f1f8' : 'var(--text)'};
-          --bg3:        ${isDark ? 'rgba(255,255,255,0.07)' : 'var(--bg3)'};
-          --border:     ${isDark ? 'rgba(255,255,255,0.14)' : 'var(--border)'};
-        }
+        @keyframes stTw { 0%,100% { opacity: 0.04; } 50% { opacity: 0.9; } }
       `}</style>
     </div>
   )
