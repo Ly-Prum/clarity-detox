@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { ChevronLeft, RefreshCw, Sparkles, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, RefreshCw, Sparkles, Check } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { CATEGORIES, QUESTIONS } from '@/lib/discoveryData'
 import {
@@ -149,83 +149,88 @@ function SectionCard({ emoji, title, color, children }: {
 }
 
 /* ── Intro Screen ────────────────────────────────────────── */
-function IntroScreen({ onStart }: { onStart: () => void }) {
+function IntroScreen({
+  onStartAll, onStartCategory,
+}: {
+  onStartAll: () => void
+  onStartCategory: (catId: string) => void
+}) {
   return (
-    <div style={{ minHeight: '100vh', background: '#faf8f5', display: 'flex', flexDirection: 'column', padding: '48px 24px 40px' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 28 }}>
-        <div>
-          <div style={{
-            width: 60, height: 60, borderRadius: 18,
-            background: 'linear-gradient(135deg, #c9a96e, #b4956c)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 20, boxShadow: '0 8px 24px rgba(180,149,108,0.3)',
-          }}>
-            <Sparkles size={26} color="#fff" />
-          </div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2d1f0f', marginBottom: 12, letterSpacing: '-0.02em', lineHeight: 1.4 }}>
-            Clarity Discovery
-          </h1>
-          <p style={{ fontSize: 14, color: '#7a6a58', lineHeight: 1.9 }}>
-            選択式の質問に答えるだけで、<br />
-            あなたの長所・感情の癖・本音・<br />
-            これからの方向性が見えてきます。<br />
-            <br />
-            正解はありません。<br />
-            思ったままを選んでみてください。
-          </p>
-        </div>
+    <div style={{ background: '#faf8f5', paddingBottom: 96 }}>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {CATEGORIES.map(cat => (
-            <div key={cat.id} style={{
+      {/* ヘッダー */}
+      <div style={{ padding: '32px 20px 20px', textAlign: 'center' }}>
+        <div style={{
+          width: 52, height: 52, borderRadius: 16,
+          background: 'linear-gradient(135deg, #c9a96e, #b4956c)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 16px', boxShadow: '0 6px 20px rgba(180,149,108,0.3)',
+        }}>
+          <Sparkles size={22} color="#fff" />
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#2d1f0f', marginBottom: 8, letterSpacing: '-0.02em' }}>
+          Clarity Discovery
+        </h1>
+        <p style={{ fontSize: 13, color: '#7a6a58', lineHeight: 1.8 }}>
+          カテゴリーを選んで始めましょう。<br />
+          どれからでも、何度でも大丈夫です。
+        </p>
+      </div>
+
+      {/* カテゴリー選択 */}
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            type="button"
+            onClick={() => onStartCategory(cat.id)}
+            style={{
               padding: '14px 16px',
-              borderRadius: 12,
+              borderRadius: 14,
               border: '1.5px solid #ece8e0',
               display: 'flex', alignItems: 'center', gap: 14,
               background: '#fff',
-            }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>{cat.emoji}</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#2d1f0f', marginBottom: 2 }}>
-                  {cat.label}
-                </div>
-                <div style={{ fontSize: 11, color: '#a89a8a', lineHeight: 1.5 }}>
-                  {cat.description}
-                </div>
+              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+              width: '100%',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <span style={{ fontSize: 24, flexShrink: 0 }}>{cat.emoji}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#2d1f0f', marginBottom: 2 }}>
+                {cat.label}
+              </div>
+              <div style={{ fontSize: 11, color: '#a89a8a' }}>
+                {cat.description}・6問
               </div>
             </div>
-          ))}
-        </div>
-
-        <div style={{
-          padding: '14px 16px', borderRadius: 12,
-          background: 'rgba(180,149,108,0.08)',
-          border: '1px solid rgba(180,149,108,0.2)',
-        }}>
-          <p style={{ fontSize: 12, color: '#7a6a58', lineHeight: 1.8, fontWeight: 500 }}>
-            全36問・6カテゴリー。<br />
-            「あなたはこういう人です」と決めるのではなく、<br />
-            今の自分をやさしく知るための診断です。
-          </p>
-        </div>
+            <ChevronRight size={16} color={cat.color} style={{ flexShrink: 0 }} />
+          </button>
+        ))}
       </div>
 
-      <button
-        onClick={onStart}
-        style={{
-          width: '100%', padding: '16px',
-          borderRadius: 50, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #c9a96e, #b4956c)',
-          color: '#fff', fontSize: 16, fontWeight: 700,
-          fontFamily: 'inherit', letterSpacing: '0.02em',
-          boxShadow: '0 6px 20px rgba(180,149,108,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          marginTop: 16,
-        }}
-      >
-        <Sparkles size={18} />
-        はじめる
-      </button>
+      {/* すべて診断するボタン */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <button
+          type="button"
+          onClick={onStartAll}
+          style={{
+            width: '100%', padding: '15px',
+            borderRadius: 50, border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg, #c9a96e, #b4956c)',
+            color: '#fff', fontSize: 15, fontWeight: 700,
+            fontFamily: 'inherit',
+            boxShadow: '0 6px 20px rgba(180,149,108,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          <Sparkles size={16} />
+          すべて診断する（36問）
+        </button>
+        <p style={{ fontSize: 11, color: '#a89a8a', textAlign: 'center', marginTop: 10 }}>
+          全カテゴリーまとめて診断します
+        </p>
+      </div>
     </div>
   )
 }
@@ -289,9 +294,10 @@ function CategoryIntroScreen({
 
 /* ── Quiz Screen ─────────────────────────────────────────── */
 function QuizScreen({
-  qIndex, answers, freeTexts, onAnswer, onFreeText, onBack, animKey,
+  qIndex, questions, answers, freeTexts, onAnswer, onFreeText, onBack, animKey,
 }: {
   qIndex: number
+  questions: typeof QUESTIONS
   answers: Record<string, number>
   freeTexts: Record<string, string>
   onAnswer: (optionIndex: number) => void
@@ -299,13 +305,13 @@ function QuizScreen({
   onBack: () => void
   animKey: number
 }) {
-  const question = QUESTIONS[qIndex]
+  const question = questions[qIndex]
   const catColor = CAT_COLOR[question.categoryId] ?? '#b4956c'
   const cat = CATEGORIES.find(c => c.id === question.categoryId)!
   const selected = answers[question.id]
-  const progress = (qIndex + 1) / QUESTIONS.length
+  const progress = (qIndex + 1) / questions.length
 
-  const catQs = QUESTIONS.filter(q => q.categoryId === question.categoryId)
+  const catQs = questions.filter(q => q.categoryId === question.categoryId)
   const catQIndex = catQs.findIndex(q => q.id === question.id)
 
   return (
@@ -718,8 +724,14 @@ export default function DiagnosisPage() {
   const [freeTexts, setFreeTexts] = useState<Record<string, string>>({})
   const [analysis, setAnalysis] = useState<DiscoveryAnalysis | null>(null)
   const [saved, setSaved] = useState(false)
+  const [activeCatId, setActiveCatId] = useState<string | null>(null)
 
   const { addDiscoverySession } = useStore()
+
+  // 現在アクティブな問題リスト
+  const activeQuestions = activeCatId
+    ? QUESTIONS.filter(q => q.categoryId === activeCatId)
+    : QUESTIONS
 
   const reset = useCallback(() => {
     setPhase('intro')
@@ -730,10 +742,26 @@ export default function DiagnosisPage() {
     setFreeTexts({})
     setAnalysis(null)
     setSaved(false)
+    setActiveCatId(null)
   }, [])
 
+  function startAll() {
+    setActiveCatId(null)
+    setCatIndex(0)
+    setQIndex(0)
+    setPhase('category')
+  }
+
+  function startCategory(catId: string) {
+    setActiveCatId(catId)
+    const idx = CATEGORIES.findIndex(c => c.id === catId)
+    setCatIndex(idx)
+    setQIndex(0)
+    setPhase('category')
+  }
+
   function handleAnswer(optionIndex: number) {
-    const question = QUESTIONS[qIndex]
+    const question = activeQuestions[qIndex]
     const nextAnswers = { ...answers, [question.id]: optionIndex }
     setAnswers(nextAnswers)
 
@@ -741,7 +769,7 @@ export default function DiagnosisPage() {
       setAnimKey(k => k + 1)
       const nextIndex = qIndex + 1
 
-      if (nextIndex >= QUESTIONS.length) {
+      if (nextIndex >= activeQuestions.length) {
         setPhase('analyzing')
         setTimeout(() => {
           const result = analyzeAnswers(nextAnswers)
@@ -751,23 +779,25 @@ export default function DiagnosisPage() {
         return
       }
 
-      const currentCat = QUESTIONS[qIndex].categoryId
-      const nextCat = QUESTIONS[nextIndex].categoryId
-
-      if (nextCat !== currentCat) {
-        const newCatIndex = CATEGORIES.findIndex(c => c.id === nextCat)
-        setCatIndex(newCatIndex)
-        setQIndex(nextIndex)
-        setPhase('category')
-      } else {
-        setQIndex(nextIndex)
+      // 全カテゴリーモードのみカテゴリー間トランジションを表示
+      if (!activeCatId) {
+        const currentCat = activeQuestions[qIndex].categoryId
+        const nextCat = activeQuestions[nextIndex].categoryId
+        if (nextCat !== currentCat) {
+          const newCatIndex = CATEGORIES.findIndex(c => c.id === nextCat)
+          setCatIndex(newCatIndex)
+          setQIndex(nextIndex)
+          setPhase('category')
+          return
+        }
       }
+      setQIndex(nextIndex)
     }, 160)
   }
 
   function handleBack() {
     if (phase === 'category') {
-      if (catIndex === 0) {
+      if (qIndex === 0) {
         setPhase('intro')
       } else {
         setAnimKey(k => k + 1)
@@ -778,19 +808,21 @@ export default function DiagnosisPage() {
     }
     if (phase === 'quiz') {
       if (qIndex === 0) {
-        setPhase('intro')
+        setPhase('category')
         return
       }
       setAnimKey(k => k + 1)
       const prevIndex = qIndex - 1
       setQIndex(prevIndex)
 
-      const prevCat = QUESTIONS[prevIndex].categoryId
-      const curCat = QUESTIONS[qIndex].categoryId
-      if (prevCat !== curCat) {
-        const prevCatIndex = CATEGORIES.findIndex(c => c.id === prevCat)
-        setCatIndex(prevCatIndex)
-        setPhase('category')
+      if (!activeCatId) {
+        const prevCat = activeQuestions[prevIndex].categoryId
+        const curCat = activeQuestions[qIndex].categoryId
+        if (prevCat !== curCat) {
+          const prevCatIndex = CATEGORIES.findIndex(c => c.id === prevCat)
+          setCatIndex(prevCatIndex)
+          setPhase('category')
+        }
       }
     }
   }
@@ -807,7 +839,9 @@ export default function DiagnosisPage() {
     setSaved(true)
   }
 
-  if (phase === 'intro')     return <IntroScreen onStart={() => setPhase('category')} />
+  if (phase === 'intro') return (
+    <IntroScreen onStartAll={startAll} onStartCategory={startCategory} />
+  )
   if (phase === 'analyzing') return <AnalyzingScreen />
   if (phase === 'result' && analysis) return (
     <ResultScreen analysis={analysis} onReset={reset} onSave={handleSave} saved={saved} />
@@ -815,17 +849,18 @@ export default function DiagnosisPage() {
   if (phase === 'category') return (
     <CategoryIntroScreen
       catIndex={catIndex}
-      totalCats={CATEGORIES.length}
+      totalCats={activeCatId ? 1 : CATEGORIES.length}
       onNext={() => setPhase('quiz')}
     />
   )
   if (phase === 'quiz') return (
     <QuizScreen
       qIndex={qIndex}
+      questions={activeQuestions}
       answers={answers}
       freeTexts={freeTexts}
       onAnswer={handleAnswer}
-      onFreeText={text => setFreeTexts(prev => ({ ...prev, [QUESTIONS[qIndex].id]: text }))}
+      onFreeText={text => setFreeTexts(prev => ({ ...prev, [activeQuestions[qIndex].id]: text }))}
       onBack={handleBack}
       animKey={animKey}
     />
