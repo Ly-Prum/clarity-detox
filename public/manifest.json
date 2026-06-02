@@ -1,12 +1,12 @@
 {
-  "name": "Mind Detox",
-  "short_name": "MindDetox",
-  "description": "脳内を整理して、前に進める状態をつくる",
+  "name": "Clarity",
+  "short_name": "Clarity",
+  "description": "自分を知り、前に進む。Clarity inner coaching app",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f0f2f8",
-  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "theme_color": "#b4956c",
   "icons": [
     {
       "src": "/icon-192.png",

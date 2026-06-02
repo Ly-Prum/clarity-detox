@@ -4,13 +4,13 @@ import AppLayout from '@/components/AppLayout'
 import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
-  title: 'Mind Detox',
-  description: '脳内を整理して、前に進める状態をつくる',
+  title: 'Clarity',
+  description: '自分を知り、前に進む。Clarity inner coaching app',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Mind Detox',
+    title: 'Clarity',
   },
   icons: {
     apple: '/apple-touch-icon.png',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#3b82f6',
+  themeColor: '#b4956c',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
