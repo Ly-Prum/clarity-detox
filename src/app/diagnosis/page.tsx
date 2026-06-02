@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react'
 import { ChevronLeft, RefreshCw, Sparkles, Check } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { CATEGORIES, QUESTIONS, QUESTIONS_BY_CATEGORY } from '@/lib/discoveryData'
+import { CATEGORIES, QUESTIONS } from '@/lib/discoveryData'
 import {
   analyzeAnswers,
   CHART_AXIS_LABELS,
@@ -162,13 +162,19 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
           }}>
             <Sparkles size={26} color="#fff" />
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#2d1f0f', marginBottom: 10, letterSpacing: '-0.02em' }}>
+          <p style={{ fontSize: 12, color: '#b4956c', fontWeight: 700, marginBottom: 6, letterSpacing: '0.04em' }}>
             Clarity Discovery
+          </p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2d1f0f', marginBottom: 12, letterSpacing: '-0.02em', lineHeight: 1.4 }}>
+            お母さんへ
           </h1>
-          <p style={{ fontSize: 14, color: '#7a6a58', lineHeight: 1.85 }}>
+          <p style={{ fontSize: 14, color: '#7a6a58', lineHeight: 1.9 }}>
             選択式の質問に答えるだけで、<br />
             あなたの長所・感情の癖・本音・<br />
-            これからの方向性が見えてきます。
+            これからの方向性が見えてきます。<br />
+            <br />
+            正解はありません。<br />
+            思ったままを選んでみてください。
           </p>
         </div>
 
@@ -202,7 +208,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
           <p style={{ fontSize: 12, color: '#7a6a58', lineHeight: 1.8, fontWeight: 500 }}>
             全36問・6カテゴリー。<br />
             「あなたはこういう人です」と決めるのではなく、<br />
-            今の自分を理解するための診断です。
+            今の自分をやさしく知るための診断です。
           </p>
         </div>
       </div>
@@ -221,7 +227,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
         }}
       >
         <Sparkles size={18} />
-        診断を始める
+        はじめる
       </button>
     </div>
   )
@@ -425,7 +431,7 @@ function AnalyzingScreen() {
           分析しています…
         </h2>
         <p style={{ fontSize: 13, color: '#7a6a58', lineHeight: 1.8 }}>
-          あなたの回答から<br />自己理解の地図をつくっています
+          お母さんの回答から<br />自己理解の地図をつくっています
         </p>
       </div>
     </div>
@@ -493,10 +499,10 @@ function ResultScreen({
             borderRadius: 18, padding: '22px 20px',
             boxShadow: '0 6px 24px rgba(180,149,108,0.3)',
           }}>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 10 }}>
-              結果サマリー
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 6 }}>
+              お母さんへ
             </div>
-            <p style={{ fontSize: 14, color: '#fff', lineHeight: 1.85, fontWeight: 500 }}>
+            <p style={{ fontSize: 14, color: '#fff', lineHeight: 1.9, fontWeight: 500 }}>
               {analysis.summary}
             </p>
           </div>
@@ -533,8 +539,8 @@ function ResultScreen({
             </p>
           </SectionCard>
 
-          {/* 今やるべきこと */}
-          <SectionCard emoji="🎯" title="今やるべきこと" color="#0891b2">
+          {/* 今からできること */}
+          <SectionCard emoji="🎯" title="今からできること" color="#0891b2">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {analysis.actionItems.map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
@@ -643,7 +649,7 @@ function ResultScreen({
             </p>
           </SectionCard>
 
-          <SectionCard emoji="🎯" title="今やるべきこと" color="#059669">
+          <SectionCard emoji="🎯" title="今からできること" color="#059669">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {analysis.actionItems.map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>

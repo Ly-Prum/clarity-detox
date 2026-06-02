@@ -1,9 +1,12 @@
 'use client'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { Brain, History, Home, Settings, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
+
+// お母さん専用 — ログイン不要で自動セットアップ
+const MOM_NAME = 'お母さん'
 
 const NAV = [
   { href: '/',          icon: Home,     label: 'ホーム' },
@@ -15,19 +18,19 @@ const NAV = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router   = useRouter()
-  const { colorTheme, isAuthenticated, currentUser } = useStore()
+  const { colorTheme, isAuthenticated, currentUser, login } = useStore()
 
   useEffect(() => {
     document.documentElement.setAttribute('data-color', colorTheme)
   }, [colorTheme])
 
-  if (pathname === '/login') return <>{children}</>
+  useEffect(() => {
+    if (!isAuthenticated) {
+      login('family@clarity-discovery.local', MOM_NAME)
+    }
+  }, [isAuthenticated, login])
 
-  if (!isAuthenticated) {
-    router.replace('/login')
-    return null
-  }
+  if (!isAuthenticated) return null
 
   return (
     <div className="app-layout">
