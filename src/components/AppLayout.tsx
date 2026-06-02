@@ -5,8 +5,8 @@ import { useEffect } from 'react'
 import { Brain, History, Home, Settings, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
 
-// お母さん専用 — ログイン不要で自動セットアップ
-const MOM_NAME = 'お母さん'
+// ログイン不要 — 初回は名前未設定でスタート、設定で変更可
+const GUEST_EMAIL = 'local@clarity-discovery.app'
 
 const NAV = [
   { href: '/',          icon: Home,     label: 'ホーム' },
@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      login('family@clarity-discovery.local', MOM_NAME)
+      login(GUEST_EMAIL, '')
     }
   }, [isAuthenticated, login])
 

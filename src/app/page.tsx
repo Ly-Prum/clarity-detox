@@ -180,7 +180,17 @@ export default function HomePage() {
             {new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
           </div>
           <div className="breathing-orb" style={{ width: 72, height: 72, margin: '0 auto 20px' }} />
-          <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 8 }}>Mind Detox</div>
+          <div style={{
+            display: 'inline-block',
+            padding: '14px 28px', borderRadius: 20, marginBottom: 8,
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>Mind Detox</div>
+          </div>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7 }}>
             頭の中を整理して、前に進める状態をつくる。
           </p>
