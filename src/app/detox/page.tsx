@@ -429,8 +429,9 @@ export default function DetoxPage() {
           <div style={{ fontSize: 22, fontWeight: 800, color: isDark ? '#fef9c3' : '#111827', letterSpacing: '-0.3px', marginBottom: 6, textShadow: isDark ? '0 0 24px rgba(253,224,71,0.5)' : 'none' }}>
             脳内デトックス
           </div>
-          <p style={{ color: isDark ? 'rgba(255,255,255,0.45)' : 'var(--text-sub)', fontSize: 13 }}>
-            今頭の中にあることを、そのまま書き出してください。判断しなくて大丈夫です。
+          <p style={{ color: isDark ? 'rgba(255,255,255,0.45)' : 'var(--text-sub)', fontSize: 13, lineHeight: 1.7 }}>
+            今頭の中にあることを、そのまま書き出してください。<br />
+            判断しなくて大丈夫です。
           </p>
         </div>
       </div>
