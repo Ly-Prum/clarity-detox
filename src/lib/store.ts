@@ -23,6 +23,7 @@ interface AppStore {
   diagnosisResults: DiagnosisResult[]
   discoverySessions: DiscoverySession[]
   addSession: (input_text: string, analysis: BrainAnalysis) => void
+  deleteSession: (id: string) => void
   clearSessions: () => void
   setProfile: (profile: CognitiveProfile) => void
   setColorTheme: (color: string) => void
@@ -30,6 +31,7 @@ interface AppStore {
   logout: () => void
   addDiagnosisResult: (result: DiagnosisResult) => void
   addDiscoverySession: (session: DiscoverySession) => void
+  deleteDiscoverySession: (id: string) => void
 }
 
 export const useStore = create<AppStore>()(
@@ -51,6 +53,7 @@ export const useStore = create<AppStore>()(
           analysis,
         }, ...s.sessions],
       })),
+      deleteSession: (id) => set(s => ({ sessions: s.sessions.filter(s => s.id !== id) })),
       clearSessions: () => set({ sessions: [] }),
       setProfile: (profile) => set({ profile }),
       setColorTheme: (colorTheme) => set({ colorTheme }),
@@ -67,6 +70,9 @@ export const useStore = create<AppStore>()(
       })),
       addDiscoverySession: (session) => set(s => ({
         discoverySessions: [session, ...s.discoverySessions],
+      })),
+      deleteDiscoverySession: (id) => set(s => ({
+        discoverySessions: s.discoverySessions.filter(s => s.id !== id),
       })),
     }),
     { name: 'mind-detox-v1' }

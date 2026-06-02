@@ -1,5 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { ChevronLeft, Trash2 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import type { DetoxSession, BalanceKey } from '@/lib/types'
 
@@ -154,17 +156,21 @@ function BarChart({ sessions, period }: { sessions: DetoxSession[]; period: Peri
 }
 
 // ── セッションカード ──────────────────────────────────────
-function SessionCard({ session, last }: { session: DetoxSession; last: boolean }) {
+function SessionCard({ session, last, onDelete }: {
+  session: DetoxSession
+  last: boolean
+  onDelete: () => void
+}) {
   const [open, setOpen] = useState(false)
   const c = NOISE_COLORS[session.analysis.noise_state] ?? '#6366f1'
   return (
     <div style={{ borderBottom: last ? 'none' : '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
-        <div style={{ minWidth: 46, textAlign: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px' }}>
+        <div style={{ minWidth: 46, textAlign: 'center', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
           <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>{session.analysis.clarity_score}</div>
           <div style={{ fontSize: 9, color: 'var(--text-faint)' }}>スコア</div>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
           <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, marginBottom: 2 }}>
             {new Date(session.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' })}
           </div>
@@ -173,11 +179,25 @@ function SessionCard({ session, last }: { session: DetoxSession; last: boolean }
             <span style={{ fontSize: 11, color: 'var(--text-faint)', lineHeight: '20px' }}>ノイズ {session.analysis.noise_level}</span>
           </div>
         </div>
-        <div style={{ color: '#ccc', fontSize: 14, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }}>▾</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
+            type="button"
+            title="削除"
+            onClick={() => { if (confirm('この記録を削除しますか？')) onDelete() }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, color: '#e11d48', opacity: 0.6, display: 'flex', alignItems: 'center', borderRadius: 8 }}
+          >
+            <Trash2 size={14} />
+          </button>
+          <div style={{ color: '#ccc', fontSize: 14, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>▾</div>
+        </div>
       </div>
       {open && (
         <div style={{ padding: '0 16px 14px' }}>
-          <p style={{ fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: 10 }}>{session.analysis.summary}</p>
+          <p style={{ fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: 10 }}>
+            {session.analysis.summary.split('。').filter(Boolean).map((s, i) => (
+              <span key={i} style={{ display: 'block' }}>{s}。</span>
+            ))}
+          </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {(Object.entries(session.analysis.balance) as [BalanceKey, number][]).map(([k, v]) => (
               <div key={k} style={{ display: 'grid', gridTemplateColumns: '70px 1fr 26px', gap: '0 8px', alignItems: 'center' }}>
@@ -197,7 +217,7 @@ function SessionCard({ session, last }: { session: DetoxSession; last: boolean }
 
 // ── 記録ページ ────────────────────────────────────────────
 export default function HistoryPage() {
-  const { sessions } = useStore()
+  const { sessions, deleteSession } = useStore()
   const [tab, setTab]     = useState<Tab>('graph')
   const [period, setPeriod] = useState<Period>('週')
   const [filter, setFilter] = useState('全て')
@@ -229,8 +249,13 @@ export default function HistoryPage() {
   return (
     <div>
       {/* タイトル */}
-      <div style={{ background: '#fff', padding: '16px 16px 0', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>記録</div>
+      <div style={{ background: '#fff', padding: '14px 16px 0', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-faint)', padding: '4px 6px 4px 0' }}>
+            <ChevronLeft size={20} />
+          </Link>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>記録</div>
+        </div>
 
         {/* グラフ / リスト タブ */}
         <div style={{ display: 'flex' }}>
@@ -295,7 +320,7 @@ export default function HistoryPage() {
                 {new Date(date + 'T12:00:00').toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
               </div>
               {daySessions.map((s, i) => (
-                <SessionCard key={s.id} session={s} last={i === daySessions.length - 1} />
+                <SessionCard key={s.id} session={s} last={i === daySessions.length - 1} onDelete={() => deleteSession(s.id)} />
               ))}
             </div>
           ))}

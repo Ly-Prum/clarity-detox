@@ -462,19 +462,40 @@ export default function DetoxPage() {
 
   return (
     <div className="page-wrap detox-wrap" style={{ maxWidth: 800, margin: '0 auto', position: 'relative' }}>
-      {isDark && <StarField />}
 
-      {/* 中央：月 */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '32px 0 28px' }}>
-        <MoonOrb />
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: isDark ? '#fef9c3' : '#111827', letterSpacing: '-0.3px', marginBottom: 6, textShadow: isDark ? '0 0 24px rgba(253,224,71,0.5)' : 'none' }}>
-            脳内デトックス
+      {/* ── 夜空セクション ── */}
+      <div style={{
+        position: 'relative', overflow: 'hidden',
+        background: 'radial-gradient(ellipse 160% 100% at 50% 0%, #0d1130 0%, #050814 55%, #000005 100%)',
+        borderRadius: '0 0 32px 32px',
+        paddingBottom: 32,
+      }}>
+        {/* 星（セクション内に収まる絶対配置） */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          {Array.from({ length: 80 }, (_, i) => (
+            <circle key={i}
+              cx={`${(i * 37 + 11) % 100}%`}
+              cy={`${(i * 53 + 7) % 100}%`}
+              r={i % 5 === 0 ? 1.2 : 0.6}
+              fill="white"
+              opacity={0.15 + (i % 6) * 0.12}
+              style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.7}s ${(i % 7) * 0.4}s ease-in-out infinite` } : undefined}
+            />
+          ))}
+        </svg>
+
+        {/* 月 */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '32px 0 12px', position: 'relative' }}>
+          <MoonOrb />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>
+              脳内デトックス
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>
+              今頭の中にあることを、そのまま書き出してください。<br />
+              判断しなくて大丈夫です。
+            </p>
           </div>
-          <p style={{ color: isDark ? 'rgba(255,255,255,0.45)' : 'var(--text-sub)', fontSize: 13, lineHeight: 1.7 }}>
-            今頭の中にあることを、そのまま書き出してください。<br />
-            判断しなくて大丈夫です。
-          </p>
         </div>
       </div>
 
