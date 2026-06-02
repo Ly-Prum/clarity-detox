@@ -1,0 +1,254 @@
+/* ═══════════════════════════════════════
+   COLOR THEME
+═══════════════════════════════════════ */
+:root {
+  --primary:    #3b82f6;
+  --primary-lt: rgba(59,130,246,0.12);
+}
+[data-color="blue"]     { --primary: #3b82f6; --primary-lt: rgba(59,130,246,0.12); }
+[data-color="sky"]      { --primary: #0ea5e9; --primary-lt: rgba(14,165,233,0.12); }
+[data-color="purple"]   { --primary: #8b5cf6; --primary-lt: rgba(139,92,246,0.12); }
+[data-color="emerald"]  { --primary: #10b981; --primary-lt: rgba(16,185,129,0.12); }
+[data-color="rose"]     { --primary: #f43f5e; --primary-lt: rgba(244,63,94,0.12);  }
+[data-color="indigo"]   { --primary: #6366f1; --primary-lt: rgba(99,102,241,0.12); }
+[data-color="teal"]     { --primary: #14b8a6; --primary-lt: rgba(20,184,166,0.12); }
+[data-color="beige"]      { --primary: #c8956c; --primary-lt: rgba(200,149,108,0.15); }
+[data-color="sand"]       { --primary: #c9a96e; --primary-lt: rgba(201,169,110,0.15); }
+[data-color="mustard"]    { --primary: #ca8a04; --primary-lt: rgba(202,138,4,0.15);   }
+[data-color="terracotta"] { --primary: #c2694f; --primary-lt: rgba(194,105,79,0.15);  }
+[data-color="caramel"]    { --primary: #b47c3a; --primary-lt: rgba(180,124,58,0.15);  }
+[data-color="khaki"]      { --primary: #8b9c4a; --primary-lt: rgba(139,156,74,0.15);  }
+[data-color="pastel-pink"]    { --primary: #ec4899; --primary-lt: rgba(236,72,153,0.12); }
+[data-color="pastel-lavender"]{ --primary: #8b5cf6; --primary-lt: rgba(139,92,246,0.12); }
+[data-color="pastel-mint"]    { --primary: #10b981; --primary-lt: rgba(16,185,129,0.12); }
+[data-color="pastel-sky"]     { --primary: #0ea5e9; --primary-lt: rgba(14,165,233,0.12); }
+[data-color="pastel-peach"]   { --primary: #f97316; --primary-lt: rgba(249,115,22,0.12); }
+[data-color="pastel-butter"]  { --primary: #ca8a04; --primary-lt: rgba(202,138,4,0.12);  }
+[data-color="pastel-lilac"]   { --primary: #a855f7; --primary-lt: rgba(168,85,247,0.12); }
+
+/* ── ライトテーマ ── */
+:root {
+  --bg:         #f0f2f8;
+  --bg2:        #ffffff;
+  --bg3:        #f5f6fb;
+  --bg4:        #e8ecf5;
+  --card:       #ffffff;
+  --border:     #e5e8f0;
+  --text:       #111827;
+  --text-sub:   #374151;
+  --text-faint: #6b7280;
+  --rose:  #e11d48;
+  --amber: #d97706;
+  --green: #16a34a;
+  --teal:  #0891b2;
+  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.05);
+  --r:    14px;
+  --r-sm: 10px;
+  --bnav-h: 68px;
+}
+
+/* ═══════════════════════════════════════
+   BASE
+═══════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT — モバイルアプリ（フィットネス型）
+═══════════════════════════════════════ */
+.app-layout {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+}
+
+.sidebar { display: none; }
+
+.main-content { padding-bottom: var(--bnav-h); }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: var(--bnav-h);
+  background: #fff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 200;
+  padding: 0 8px 4px;
+}
+
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 6px; color: #94a3b8;
+  text-decoration: none; font-size: 10px; font-weight: 500;
+  transition: color 0.15s; border-radius: 14px; flex: 1;
+}
+.bnav-item.active { color: var(--primary); font-weight: 700; }
+
+/* PC でもスマホUI固定 */
+.sidebar { display: none !important; }
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn-pill {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 15px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 48px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 35%, transparent);
+  text-decoration: none; font-family: inherit;
+}
+.btn-pill:hover { opacity: 0.88; }
+.btn-pill:active { transform: scale(0.97); }
+.btn-pill:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-pill-sm {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 48px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s; text-decoration: none; font-family: inherit;
+}
+.btn-pill-sm:hover { opacity: 0.88; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--text-sub);
+  border: 1px solid var(--border); border-radius: 48px;
+  padding: 9px 16px; font-size: 13px;
+  cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.btn-ghost:hover { background: var(--bg3); }
+
+.btn-grad { /* detoex page 用 */
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 48px;
+  padding: 12px 24px; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s; font-family: inherit;
+}
+.btn-grad:hover { opacity: 0.88; }
+.btn-grad:active { transform: scale(0.97); }
+.btn-grad:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── 期間セレクター（週/月/年） ── */
+.period-selector {
+  display: flex; background: var(--bg3);
+  border-radius: 24px; padding: 3px;
+}
+.period-btn {
+  flex: 1; padding: 8px 0; border: none; cursor: pointer;
+  background: transparent; color: var(--text-faint);
+  font-size: 13px; font-weight: 500; border-radius: 22px;
+  transition: all 0.18s; font-family: inherit;
+}
+.period-btn.active {
+  background: #fff; color: var(--primary);
+  font-weight: 700; box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+/* ── ページ内タブ（ダッシュボード/バランス） ── */
+.page-tab-bar {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+}
+.page-tab-btn {
+  padding: 13px 0; margin-right: 24px;
+  border: none; background: transparent;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  color: var(--text-faint); font-family: inherit;
+  border-bottom: 2.5px solid transparent;
+  transition: all 0.15s;
+}
+.page-tab-btn.active { color: var(--primary); font-weight: 700; border-bottom-color: var(--primary); }
+
+/* ═══════════════════════════════════════
+   INPUTS
+═══════════════════════════════════════ */
+.input {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); color: var(--text);
+  padding: 12px 16px; font-size: 15px; outline: none;
+  width: 100%; transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
+}
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt); }
+.input::placeholder { color: var(--text-faint); opacity: 0.45; }
+textarea.input { resize: none; line-height: 1.7; }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.08); opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-right { animation: slideInRight 0.22s ease forwards; }
+.slide-left  { animation: slideInLeft  0.22s ease forwards; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.breathing-orb {
+  border-radius: 50%; background: var(--primary);
+  animation: breathe 4s ease-in-out infinite;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.fade-up   { animation: fadeUp 0.4s ease forwards; }
+.fade-up-2 { animation: fadeUp 0.4s 0.07s ease both; }
+.fade-up-3 { animation: fadeUp 0.4s 0.14s ease both; }
+
+/* ═══════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
