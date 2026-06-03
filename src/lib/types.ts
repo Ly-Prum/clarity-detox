@@ -60,6 +60,40 @@ export interface CheckIn {
   created_at: string
 }
 
+export interface SelfAcceptanceContent {
+  state: string
+  blame: string
+  message: string
+}
+
+export interface PermissionContent {
+  permissions: string[]
+}
+
+export interface CoachingNote {
+  id: string
+  user_id: string
+  type: 'self_acceptance' | 'permission'
+  content: SelfAcceptanceContent | PermissionContent
+  created_at: string
+}
+
+export interface IntegratedAnalysisContent {
+  core_pattern: string
+  insight: string
+  self_acceptance_message: string
+  permission: string
+  next_step: string
+  affirmation: string
+}
+
+export interface IntegratedAnalysis {
+  id: string
+  user_id: string
+  content: IntegratedAnalysisContent
+  created_at: string
+}
+
 export interface ClarityReport {
   id: string
   client_code: string

@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Brain, History, Home, Settings, Target, FileText, CheckSquare } from 'lucide-react'
+import { Brain, History, Home, Settings, Target, FileText, CheckSquare, BookOpen, Sparkles } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import type { DetoxSession, DiscoverySession } from '@/lib/types'
@@ -14,6 +14,8 @@ const PERSONAL_NAV = [
   { href: '/detox',     icon: Brain,        label: '脳内デトックス' },
   { href: '/history',   icon: History,      label: '記録' },
   { href: '/diagnosis', icon: Target,       label: '診断' },
+  { href: '/notes',     icon: BookOpen,     label: 'コーチングノート' },
+  { href: '/analysis',  icon: Sparkles,     label: '統合AI分析' },
 ]
 
 const COACH_NAV = [
@@ -25,6 +27,8 @@ const BOTTOM_NAV = [
   { href: '/',         icon: Home,        label: 'ホーム' },
   { href: '/detox',    icon: Brain,       label: 'デトックス' },
   { href: '/checkin',  icon: CheckSquare, label: 'チェックイン' },
+  { href: '/notes',    icon: BookOpen,    label: 'ノート' },
+  { href: '/analysis', icon: Sparkles,   label: 'AI分析' },
   { href: '/reports',  icon: FileText,    label: 'レポート' },
   { href: '/settings', icon: Settings,    label: '設定' },
 ]
