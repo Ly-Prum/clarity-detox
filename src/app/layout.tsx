@@ -16,6 +16,27 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
     icon: '/icon-192.png',
   },
+  openGraph: {
+    title: 'Clarity',
+    description: '自分を知り、前に進む。Clarity inner coaching app',
+    siteName: 'Clarity',
+    images: [
+      {
+        url: 'https://clarity-detox.vercel.app/clarity-logo-beige.png',
+        width: 1024,
+        height: 1024,
+        alt: 'Clarity inner coach',
+      },
+    ],
+    locale: 'ja_JP',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Clarity',
+    description: '自分を知り、前に進む。Clarity inner coaching app',
+    images: ['https://clarity-detox.vercel.app/clarity-logo-beige.png'],
+  },
 }
 
 export const viewport: Viewport = {
