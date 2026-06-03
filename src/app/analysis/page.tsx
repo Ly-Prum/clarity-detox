@@ -39,6 +39,7 @@ export default function AnalysisPage() {
   const [loadingMsg, setLoadingMsg] = useState(0)
   const [error, setError] = useState('')
   const [openPastId, setOpenPastId] = useState<string | null>(null)
+  const [explainOpen, setExplainOpen] = useState(false)
 
   useEffect(() => {
     if (!currentUser) return
@@ -109,6 +110,41 @@ export default function AnalysisPage() {
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Step 4</div>
         <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>統合AI分析</div>
         <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.7 }}>これまでの記録をAIが統合し、あなたの深層パターンと次へのメッセージを届けます。</div>
+      </div>
+
+      {/* この分析でわかること（開閉式） */}
+      <div className="card" style={{ marginBottom: 16, overflow: 'hidden' }}>
+        <button
+          type="button"
+          onClick={() => setExplainOpen(o => !o)}
+          style={{ width: '100%', padding: '13px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>📖 この分析でわかること</span>
+          <span style={{ fontSize: 18, color: 'var(--text-faint)', transition: 'transform 0.2s', transform: explainOpen ? 'rotate(180deg)' : 'none' }}>∨</span>
+        </button>
+        {explainOpen && (
+          <div style={{ padding: '0 16px 16px', borderTop: '1px solid var(--border)' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-faint)', lineHeight: 1.7, marginBottom: 14 }}>
+              脳内デトックス・自己受容ノート・許可ノート・Discoveryの記録を統合し、あなた自身も気づきにくい深層パターンを6つの視点から届けます。
+            </p>
+            {[
+              { icon: '🔍', label: '核となるパターン',       desc: '無意識に繰り返している思考・行動のクセ。「なぜいつもこうなるのか」の答えがここに。' },
+              { icon: '💡', label: '統合的な気づき',         desc: '複数のデータをまとめて見たとき初めて見えてくる本質的な洞察。' },
+              { icon: '🌱', label: 'あなたへのメッセージ',   desc: '今の自分をそのまま受け取るための言葉。評価なく、ただ寄り添う視点。' },
+              { icon: '✨', label: 'あなたへの許可',         desc: '「〜していいよ」という形で届く、自分を解放するための言葉。' },
+              { icon: '🪜', label: '次のステップ',           desc: '今すぐできる小さな一歩。大きな変化より、明日の自分がラクになる提案。' },
+              { icon: '💫', label: 'アファーメーション',     desc: '「私は〜」形式で声に出せる肯定文。繰り返すことで自己認識が変わっていく。' },
+            ].map(({ icon, label, desc }) => (
+              <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.65 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ステップ案内 */}
