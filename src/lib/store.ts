@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { DetoxSession, BrainAnalysis, CognitiveProfile, DiscoverySession } from './types'
+import { supabase } from './supabase'
 
 interface CurrentUser {
   email: string
@@ -22,6 +23,7 @@ interface AppStore {
   currentUser: CurrentUser | null
   diagnosisResults: DiagnosisResult[]
   discoverySessions: DiscoverySession[]
+  setSessions: (sessions: DetoxSession[]) => void
   addSession: (input_text: string, analysis: BrainAnalysis) => void
   deleteSession: (id: string) => void
   clearSessions: () => void
@@ -36,7 +38,7 @@ interface AppStore {
 
 export const useStore = create<AppStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       sessions: [],
       profile: null,
       colorTheme: 'sand',
@@ -44,16 +46,26 @@ export const useStore = create<AppStore>()(
       currentUser: null,
       diagnosisResults: [],
       discoverySessions: [],
-      addSession: (input_text, analysis) => set(s => ({
-        sessions: [{
+      setSessions: (sessions) => set({ sessions }),
+      addSession: (input_text, analysis) => {
+        const session: DetoxSession = {
           id: crypto.randomUUID(),
-          user_id: s.currentUser?.email ?? 'local',
+          user_id: get().currentUser?.email ?? 'local',
           created_at: new Date().toISOString(),
           input_text,
           analysis,
-        }, ...s.sessions],
-      })),
-      deleteSession: (id) => set(s => ({ sessions: s.sessions.filter(s => s.id !== id) })),
+        }
+        set(s => ({ sessions: [session, ...s.sessions] }))
+        supabase.from('sessions').upsert(session).then(({ error }) => {
+          if (error) console.error('Supabase save error:', error)
+        })
+      },
+      deleteSession: (id) => {
+        set(s => ({ sessions: s.sessions.filter(s => s.id !== id) }))
+        supabase.from('sessions').delete().eq('id', id).then(({ error }) => {
+          if (error) console.error('Supabase delete error:', error)
+        })
+      },
       clearSessions: () => set({ sessions: [] }),
       setProfile: (profile) => set({ profile }),
       setColorTheme: (colorTheme) => set({ colorTheme }),

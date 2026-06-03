@@ -4,6 +4,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Brain, History, Home, Settings, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
+import { supabase } from '@/lib/supabase'
+import type { DetoxSession } from '@/lib/types'
 
 const NAV = [
   { href: '/',          icon: Home,     label: 'ホーム' },
@@ -16,13 +18,28 @@ const NAV = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { colorTheme, isAuthenticated, currentUser, setColorTheme } = useStore()
+  const { colorTheme, isAuthenticated, currentUser, setColorTheme, setSessions } = useStore()
 
   // カラーテーマを常にsand（Clarityブランド）に固定
   useEffect(() => {
     setColorTheme('sand')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ログイン時にSupabaseからセッションを取得
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser) return
+    supabase
+      .from('sessions')
+      .select('*')
+      .eq('user_id', currentUser.email)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { console.error('Supabase fetch error:', error); return }
+        if (data && data.length > 0) setSessions(data as DetoxSession[])
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, currentUser?.email])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-color', colorTheme)
