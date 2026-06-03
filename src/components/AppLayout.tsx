@@ -2,12 +2,11 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Brain, History, Home, Settings, Target, FileText, CheckSquare, BookOpen, Sparkles, Menu, X, ChevronRight } from 'lucide-react'
+import { Brain, History, Home, Settings, Target, FileText, CheckSquare, BookOpen, Sparkles, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import type { DetoxSession, DiscoverySession } from '@/lib/types'
 
-// PC サイドバー用（セクション分け）
 const PERSONAL_NAV = [
   { href: '/',          icon: Home,        label: 'ホーム' },
   { href: '/analysis',  icon: Sparkles,    label: '統合AI分析' },
@@ -22,7 +21,6 @@ const COACH_NAV = [
   { href: '/reports', icon: FileText, label: '分析レポート' },
 ]
 
-// スマホ ボトムナビ用
 const BOTTOM_NAV = [
   { href: '/',         icon: Home,        label: 'ホーム' },
   { href: '/detox',    icon: Brain,       label: 'デトックス' },
@@ -31,20 +29,36 @@ const BOTTOM_NAV = [
   { href: '/settings', icon: Settings,    label: '設定' },
 ]
 
-function NavLink({ href, icon: Icon, label, pathname, onClick }: { href: string; icon: React.ElementType; label: string; pathname: string; onClick?: () => void }) {
+function NavLink({
+  href, icon: Icon, label, pathname, onClick, collapsed,
+}: {
+  href: string; icon: React.ElementType; label: string
+  pathname: string; onClick?: () => void; collapsed?: boolean
+}) {
   const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
   return (
-    <Link href={href} onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 14px', borderRadius: 10, marginBottom: 2,
-      textDecoration: 'none',
-      background: active ? 'var(--primary-lt)' : 'transparent',
-      color: active ? 'var(--primary)' : 'var(--text-sub)',
-      fontWeight: active ? 700 : 400, fontSize: 14,
-      transition: 'all 0.15s',
-    }}>
-      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
-      {label}
+    <Link
+      href={href}
+      onClick={onClick}
+      title={collapsed ? label : undefined}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        gap: collapsed ? 0 : 12,
+        padding: collapsed ? '10px 0' : '10px 14px',
+        borderRadius: 10,
+        marginBottom: 2,
+        textDecoration: 'none',
+        background: active ? 'var(--primary-lt)' : 'transparent',
+        color: active ? 'var(--primary)' : 'var(--text-sub)',
+        fontWeight: active ? 700 : 400,
+        fontSize: 14,
+        transition: 'all 0.15s',
+      }}
+    >
+      <Icon size={collapsed ? 22 : 18} strokeWidth={active ? 2.5 : 1.8} />
+      {!collapsed && <span>{label}</span>}
     </Link>
   )
 }
@@ -58,28 +72,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
-    // 保存済みテーマを document に適用（上書きしない）
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
     if (!isAuthenticated || !currentUser) return
     supabase
-      .from('sessions')
-      .select('*')
+      .from('sessions').select('*')
       .eq('user_id', currentUser.email)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        if (error) { console.error('Supabase sessions fetch error:', error); return }
+        if (error) { console.error('sessions fetch error:', error); return }
         if (data && data.length > 0) setSessions(data as DetoxSession[])
       })
     supabase
-      .from('discovery_sessions')
-      .select('*')
+      .from('discovery_sessions').select('*')
       .eq('user_id', currentUser.email)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        if (error) { console.error('Supabase discovery fetch error:', error); return }
+        if (error) { console.error('discovery fetch error:', error); return }
         if (data && data.length > 0) setDiscoverySessions(data as DiscoverySession[])
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,7 +102,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router])
 
-  // ドロワーが開いている間、背景スクロールを止める
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -104,24 +110,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (pathname === '/login') return <>{children}</>
   if (!isAuthenticated) return null
 
-  const sidebarContent = (onLinkClick?: () => void) => (
+  // ドロワー（スマホ）用サイドバー内容
+  const drawerContent = (
     <>
-      <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28, letterSpacing: '-0.3px' }}>
-        Clarity
-      </div>
+      <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28 }}>Clarity</div>
       <nav style={{ flex: 1 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
-          個人の記録
-        </div>
-        {PERSONAL_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={onLinkClick} />)}
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>個人の記録</div>
+        {PERSONAL_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setDrawerOpen(false)} />)}
         <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0 12px' }} />
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
-          コーチから
-        </div>
-        {COACH_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={onLinkClick} />)}
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>コーチから</div>
+        {COACH_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setDrawerOpen(false)} />)}
       </nav>
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 'auto' }}>
-        <NavLink href="/settings" icon={Settings} label="設定" pathname={pathname} onClick={onLinkClick} />
+        <NavLink href="/settings" icon={Settings} label="設定" pathname={pathname} onClick={() => setDrawerOpen(false)} />
         <div style={{ marginTop: 10, padding: '0 4px' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{currentUser?.name ?? 'ユーザー'}</div>
           <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>{currentUser?.email}</div>
@@ -130,36 +131,76 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </>
   )
 
-  return (
-    <div className={`app-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
-      {/* PC サイドバー */}
-      <aside className="sidebar">
-        <button
-          type="button"
-          title="サイドバーを閉じる"
-          onClick={() => setSidebarCollapsed(true)}
-          style={{ alignSelf: 'flex-end', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 16px', color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
-        >
-          <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} /> 閉じる
-        </button>
-        {sidebarContent()}
-      </aside>
+  const c = sidebarCollapsed
 
-      {/* PC サイドバーが閉じているとき: 展開ボタン */}
-      {sidebarCollapsed && (
+  return (
+    <div className={`app-layout${c ? ' sidebar-collapsed' : ''}`}>
+
+      {/* ── PC サイドバー ── */}
+      <aside className="sidebar">
+        {/* トグルボタン（常に表示） */}
         <button
           type="button"
-          title="サイドバーを開く"
-          className="sidebar-expand-btn"
-          onClick={() => setSidebarCollapsed(false)}
+          title={c ? 'サイドバーを開く' : 'サイドバーを閉じる'}
+          onClick={() => setSidebarCollapsed(prev => !prev)}
+          style={{
+            alignSelf: c ? 'center' : 'flex-end',
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: c ? '8px 0' : '0 0 16px',
+            color: 'var(--text-faint)',
+            display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
+            marginBottom: c ? 12 : 0,
+          }}
         >
-          <ChevronRight size={14} />
+          {c
+            ? <ChevronRight size={18} />
+            : <><ChevronLeft size={14} /><span>閉じる</span></>
+          }
         </button>
-      )}
+
+        {/* ブランド（展開時のみ） */}
+        {!c && (
+          <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28 }}>Clarity</div>
+        )}
+
+        {/* 個人ナビ */}
+        <nav style={{ flex: 1 }}>
+          {!c && (
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
+              個人の記録
+            </div>
+          )}
+          {PERSONAL_NAV.map(item => (
+            <NavLink key={item.href} {...item} pathname={pathname} collapsed={c} />
+          ))}
+
+          <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0 12px' }} />
+
+          {!c && (
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
+              コーチから
+            </div>
+          )}
+          {COACH_NAV.map(item => (
+            <NavLink key={item.href} {...item} pathname={pathname} collapsed={c} />
+          ))}
+        </nav>
+
+        {/* フッター */}
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+          <NavLink href="/settings" icon={Settings} label="設定" pathname={pathname} collapsed={c} />
+          {!c && (
+            <div style={{ marginTop: 10, padding: '0 4px' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{currentUser?.name ?? 'ユーザー'}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>{currentUser?.email}</div>
+            </div>
+          )}
+        </div>
+      </aside>
 
       <main className="main-content">{children}</main>
 
-      {/* スマホ ボトムナビ */}
+      {/* ── スマホ ボトムナビ ── */}
       <nav className="bottom-nav">
         {BOTTOM_NAV.map(({ href, icon: Icon, label }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -172,7 +213,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      {/* スマホ ハンバーガーボタン */}
+      {/* ── スマホ ハンバーガーボタン ── */}
       <button
         type="button"
         className="mobile-menu-btn"
@@ -182,7 +223,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Menu size={20} />
       </button>
 
-      {/* スマホ ドロワー */}
+      {/* ── スマホ ドロワー ── */}
       {drawerOpen && (
         <>
           <div className="drawer-overlay" onClick={() => setDrawerOpen(false)} />
@@ -195,7 +236,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               <X size={20} />
             </button>
-            {sidebarContent(() => setDrawerOpen(false))}
+            {drawerContent}
           </aside>
         </>
       )}
