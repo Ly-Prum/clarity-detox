@@ -206,16 +206,24 @@ function ReportCard({ report }: { report: ClarityReport }) {
           {Object.keys(report.scores).length > 0 && (
             <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)', marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 12, letterSpacing: '0.5px' }}>8軸スコア</div>
-              <ReportRadar scores={report.scores} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 12 }}>
-                {REPORT_AXES.map(axis => (
-                  <div key={axis} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ flex: 1, fontSize: 11, color: 'var(--text-sub)' }}>{axis}</div>
-                    <div style={{ display: 'flex', gap: 2 }}>
-                      {[1,2,3,4,5].map(n => <div key={n} style={{ width: 6, height: 6, borderRadius: '50%', background: n <= (report.scores[axis]??0) ? 'var(--primary)' : 'var(--border)' }} />)}
-                    </div>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <ReportRadar scores={report.scores} />
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  {REPORT_AXES.map(axis => {
+                    const score = report.scores[axis] ?? 0
+                    return (
+                      <div key={axis} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-sub)' }}>{axis}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)' }}>{score} / 5</span>
+                        </div>
+                        <div style={{ height: 8, background: 'var(--bg4)', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${(score / 5) * 100}%`, background: 'var(--primary)', borderRadius: 4, transition: 'width 0.8s ease' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}

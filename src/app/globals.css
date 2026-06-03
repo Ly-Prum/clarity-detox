@@ -64,7 +64,7 @@ html, body {
 }
 
 /* ═══════════════════════════════════════
-   LAYOUT — モバイルアプリ（フィットネス型）
+   LAYOUT — スマホ（ボトムナビ）
 ═══════════════════════════════════════ */
 .app-layout {
   max-width: 480px;
@@ -103,8 +103,41 @@ html, body {
 }
 .bnav-item.active { color: var(--primary); font-weight: 700; }
 
-/* PC でもスマホUI固定 */
-.sidebar { display: none !important; }
+/* ═══════════════════════════════════════
+   LAYOUT — PC（サイドバー）
+═══════════════════════════════════════ */
+@media (min-width: 768px) {
+  .app-layout {
+    max-width: 960px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    display: flex !important;
+    flex-direction: column;
+    width: 220px;
+    min-height: 100vh;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    padding: 28px 16px 24px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .main-content {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 40px;
+  }
+
+  .bottom-nav { display: none !important; }
+}
 
 /* ═══════════════════════════════════════
    CARDS
