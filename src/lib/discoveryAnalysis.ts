@@ -268,5 +268,5 @@ export const DIRECTION_LABEL_MAP: Record<string, string> = {
 }
 
 export const CATEGORY_ANSWERCOUNT: Record<CategoryId, number> = {
-  self: 6, emotion: 6, relationships: 6, values: 6, innerChild: 6, future: 6,
+  identity: 6, mindset: 6, relationships: 6, career: 6, romance: 6, values: 6,
 }
