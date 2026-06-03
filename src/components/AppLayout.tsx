@@ -2,17 +2,18 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Brain, History, Home, Settings, Target, FileText } from 'lucide-react'
+import { Brain, History, Home, Settings, Target, FileText, CheckSquare } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import type { DetoxSession, DiscoverySession } from '@/lib/types'
 
 // PC サイドバー用（セクション分け）
 const PERSONAL_NAV = [
-  { href: '/',          icon: Home,    label: 'ホーム' },
-  { href: '/detox',     icon: Brain,   label: '脳内デトックス' },
-  { href: '/history',   icon: History, label: '記録' },
-  { href: '/diagnosis', icon: Target,  label: '診断' },
+  { href: '/',          icon: Home,         label: 'ホーム' },
+  { href: '/checkin',   icon: CheckSquare,  label: 'デイリーチェックイン' },
+  { href: '/detox',     icon: Brain,        label: '脳内デトックス' },
+  { href: '/history',   icon: History,      label: '記録' },
+  { href: '/diagnosis', icon: Target,       label: '診断' },
 ]
 
 const COACH_NAV = [
@@ -21,11 +22,11 @@ const COACH_NAV = [
 
 // スマホ ボトムナビ用
 const BOTTOM_NAV = [
-  { href: '/',         icon: Home,     label: 'ホーム' },
-  { href: '/detox',    icon: Brain,    label: 'デトックス' },
-  { href: '/reports',  icon: FileText, label: 'レポート' },
-  { href: '/history',  icon: History,  label: '記録' },
-  { href: '/settings', icon: Settings, label: '設定' },
+  { href: '/',         icon: Home,        label: 'ホーム' },
+  { href: '/detox',    icon: Brain,       label: 'デトックス' },
+  { href: '/checkin',  icon: CheckSquare, label: 'チェックイン' },
+  { href: '/reports',  icon: FileText,    label: 'レポート' },
+  { href: '/settings', icon: Settings,    label: '設定' },
 ]
 
 function NavLink({ href, icon: Icon, label, pathname }: { href: string; icon: React.ElementType; label: string; pathname: string }) {

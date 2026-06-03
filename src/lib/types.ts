@@ -49,6 +49,17 @@ export interface WordConversion {
   after: string
 }
 
+export interface CheckIn {
+  id: string
+  user_id: string
+  date: string
+  mood: number
+  theme: string
+  highlight: string
+  memo: string
+  created_at: string
+}
+
 export interface ClarityReport {
   id: string
   client_code: string
