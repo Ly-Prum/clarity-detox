@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { Brain, History, Home, Settings, Target, FileText } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
-import type { DetoxSession } from '@/lib/types'
+import type { DetoxSession, DiscoverySession } from '@/lib/types'
 
 // PC サイドバー用（セクション分け）
 const PERSONAL_NAV = [
@@ -49,7 +49,7 @@ function NavLink({ href, icon: Icon, label, pathname }: { href: string; icon: Re
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { colorTheme, isAuthenticated, currentUser, setColorTheme, setSessions } = useStore()
+  const { colorTheme, isAuthenticated, currentUser, setColorTheme, setSessions, setDiscoverySessions } = useStore()
 
   useEffect(() => {
     setColorTheme('sand')
@@ -64,8 +64,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .eq('user_id', currentUser.email)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        if (error) { console.error('Supabase fetch error:', error); return }
+        if (error) { console.error('Supabase sessions fetch error:', error); return }
         if (data && data.length > 0) setSessions(data as DetoxSession[])
+      })
+    supabase
+      .from('discovery_sessions')
+      .select('*')
+      .eq('user_id', currentUser.email)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { console.error('Supabase discovery fetch error:', error); return }
+        if (data && data.length > 0) setDiscoverySessions(data as DiscoverySession[])
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, currentUser?.email])

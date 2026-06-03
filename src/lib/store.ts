@@ -24,6 +24,7 @@ interface AppStore {
   diagnosisResults: DiagnosisResult[]
   discoverySessions: DiscoverySession[]
   setSessions: (sessions: DetoxSession[]) => void
+  setDiscoverySessions: (sessions: DiscoverySession[]) => void
   addSession: (input_text: string, analysis: BrainAnalysis) => void
   deleteSession: (id: string) => void
   clearSessions: () => void
@@ -47,6 +48,7 @@ export const useStore = create<AppStore>()(
       diagnosisResults: [],
       discoverySessions: [],
       setSessions: (sessions) => set({ sessions }),
+      setDiscoverySessions: (discoverySessions) => set({ discoverySessions }),
       addSession: (input_text, analysis) => {
         const session: DetoxSession = {
           id: crypto.randomUUID(),
@@ -80,12 +82,20 @@ export const useStore = create<AppStore>()(
       addDiagnosisResult: (result) => set(s => ({
         diagnosisResults: [result, ...s.diagnosisResults],
       })),
-      addDiscoverySession: (session) => set(s => ({
-        discoverySessions: [session, ...s.discoverySessions],
-      })),
-      deleteDiscoverySession: (id) => set(s => ({
-        discoverySessions: s.discoverySessions.filter(s => s.id !== id),
-      })),
+      addDiscoverySession: (session) => {
+        const userId = get().currentUser?.email ?? 'local'
+        const withUser = { ...session, user_id: userId }
+        set(s => ({ discoverySessions: [session, ...s.discoverySessions] }))
+        supabase.from('discovery_sessions').upsert(withUser).then(({ error }) => {
+          if (error) console.error('Supabase discovery save error:', error)
+        })
+      },
+      deleteDiscoverySession: (id) => {
+        set(s => ({ discoverySessions: s.discoverySessions.filter(s => s.id !== id) }))
+        supabase.from('discovery_sessions').delete().eq('id', id).then(({ error }) => {
+          if (error) console.error('Supabase discovery delete error:', error)
+        })
+      },
     }),
     { name: 'mind-detox-v1' }
   )
