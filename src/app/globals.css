@@ -1,30 +1,43 @@
 /* ═══════════════════════════════════════
-   COLOR THEME
+   COLOR THEME — 30色
 ═══════════════════════════════════════ */
-:root {
-  --primary:    #3b82f6;
-  --primary-lt: rgba(59,130,246,0.12);
-}
-[data-color="blue"]     { --primary: #3b82f6; --primary-lt: rgba(59,130,246,0.12); }
-[data-color="sky"]      { --primary: #0ea5e9; --primary-lt: rgba(14,165,233,0.12); }
-[data-color="purple"]   { --primary: #8b5cf6; --primary-lt: rgba(139,92,246,0.12); }
-[data-color="emerald"]  { --primary: #10b981; --primary-lt: rgba(16,185,129,0.12); }
-[data-color="rose"]     { --primary: #f43f5e; --primary-lt: rgba(244,63,94,0.12);  }
-[data-color="indigo"]   { --primary: #6366f1; --primary-lt: rgba(99,102,241,0.12); }
-[data-color="teal"]     { --primary: #14b8a6; --primary-lt: rgba(20,184,166,0.12); }
-[data-color="beige"]      { --primary: #c8956c; --primary-lt: rgba(200,149,108,0.15); }
+:root { --primary: #c9a96e; --primary-lt: rgba(201,169,110,0.15); }
+
+/* パステル 10色 */
+[data-color="p-sakura"]   { --primary: #d4789a; --primary-lt: rgba(212,120,154,0.14); }
+[data-color="p-lavender"] { --primary: #9b82c8; --primary-lt: rgba(155,130,200,0.14); }
+[data-color="p-mint"]     { --primary: #52b896; --primary-lt: rgba(82,184,150,0.14);  }
+[data-color="p-sky"]      { --primary: #5aace0; --primary-lt: rgba(90,172,224,0.14);  }
+[data-color="p-peach"]    { --primary: #d08060; --primary-lt: rgba(208,128,96,0.14);  }
+[data-color="p-butter"]   { --primary: #c8a030; --primary-lt: rgba(200,160,48,0.14);  }
+[data-color="p-lilac"]    { --primary: #b080c8; --primary-lt: rgba(176,128,200,0.14); }
+[data-color="p-rose"]     { --primary: #e07090; --primary-lt: rgba(224,112,144,0.14); }
+[data-color="p-sage"]     { --primary: #7ab07a; --primary-lt: rgba(122,176,122,0.14); }
+[data-color="p-powder"]   { --primary: #6888c8; --primary-lt: rgba(104,136,200,0.14); }
+
+/* メイン 10色 */
 [data-color="sand"]       { --primary: #c9a96e; --primary-lt: rgba(201,169,110,0.15); }
-[data-color="mustard"]    { --primary: #ca8a04; --primary-lt: rgba(202,138,4,0.15);   }
+[data-color="blue"]       { --primary: #3b82f6; --primary-lt: rgba(59,130,246,0.12);  }
+[data-color="sky"]        { --primary: #0ea5e9; --primary-lt: rgba(14,165,233,0.12);  }
+[data-color="purple"]     { --primary: #8b5cf6; --primary-lt: rgba(139,92,246,0.12);  }
+[data-color="emerald"]    { --primary: #10b981; --primary-lt: rgba(16,185,129,0.12);  }
+[data-color="rose"]       { --primary: #f43f5e; --primary-lt: rgba(244,63,94,0.12);   }
+[data-color="teal"]       { --primary: #14b8a6; --primary-lt: rgba(20,184,166,0.12);  }
+[data-color="orange"]     { --primary: #f97316; --primary-lt: rgba(249,115,22,0.12);  }
+[data-color="indigo"]     { --primary: #6366f1; --primary-lt: rgba(99,102,241,0.12);  }
 [data-color="terracotta"] { --primary: #c2694f; --primary-lt: rgba(194,105,79,0.15);  }
-[data-color="caramel"]    { --primary: #b47c3a; --primary-lt: rgba(180,124,58,0.15);  }
-[data-color="khaki"]      { --primary: #8b9c4a; --primary-lt: rgba(139,156,74,0.15);  }
-[data-color="pastel-pink"]    { --primary: #ec4899; --primary-lt: rgba(236,72,153,0.12); }
-[data-color="pastel-lavender"]{ --primary: #8b5cf6; --primary-lt: rgba(139,92,246,0.12); }
-[data-color="pastel-mint"]    { --primary: #10b981; --primary-lt: rgba(16,185,129,0.12); }
-[data-color="pastel-sky"]     { --primary: #0ea5e9; --primary-lt: rgba(14,165,233,0.12); }
-[data-color="pastel-peach"]   { --primary: #f97316; --primary-lt: rgba(249,115,22,0.12); }
-[data-color="pastel-butter"]  { --primary: #ca8a04; --primary-lt: rgba(202,138,4,0.12);  }
-[data-color="pastel-lilac"]   { --primary: #a855f7; --primary-lt: rgba(168,85,247,0.12); }
+
+/* ダーク 10色 */
+[data-color="d-navy"]     { --primary: #1e40af; --primary-lt: rgba(30,64,175,0.15);  }
+[data-color="d-violet"]   { --primary: #5b21b6; --primary-lt: rgba(91,33,182,0.15);  }
+[data-color="d-teal"]     { --primary: #0f766e; --primary-lt: rgba(15,118,110,0.15); }
+[data-color="d-crimson"]  { --primary: #991b1b; --primary-lt: rgba(153,27,27,0.15);  }
+[data-color="d-forest"]   { --primary: #15803d; --primary-lt: rgba(21,128,61,0.15);  }
+[data-color="d-rose"]     { --primary: #9d174d; --primary-lt: rgba(157,23,77,0.15);  }
+[data-color="d-slate"]    { --primary: #1e3a5f; --primary-lt: rgba(30,58,95,0.15);   }
+[data-color="d-copper"]   { --primary: #92400e; --primary-lt: rgba(146,64,14,0.15);  }
+[data-color="d-olive"]    { --primary: #3f6212; --primary-lt: rgba(63,98,18,0.15);   }
+[data-color="d-charcoal"] { --primary: #374151; --primary-lt: rgba(55,65,81,0.15);   }
 
 /* ── ライトテーマ ── */
 :root {
@@ -137,6 +150,78 @@ html, body {
   }
 
   .bottom-nav { display: none !important; }
+
+  /* PC サイドバー開閉 */
+  .sidebar-collapsed .sidebar {
+    width: 0 !important;
+    padding: 0 !important;
+    border-right: none !important;
+    overflow: hidden !important;
+  }
+  .sidebar-expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 16px;
+    width: 28px;
+    height: 28px;
+    margin: 16px 8px 0 4px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* スマホ ハンバーガー + ドロワー */
+.mobile-menu-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 300;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  color: var(--text-sub);
+}
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 499;
+}
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  z-index: 500;
+  padding: 24px 16px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .mobile-menu-btn { display: none !important; }
+  .mobile-drawer   { display: none !important; }
+  .drawer-overlay  { display: none !important; }
+  .sidebar-expand-btn { display: flex; }
 }
 
 /* ═══════════════════════════════════════
