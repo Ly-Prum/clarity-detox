@@ -2,31 +2,60 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Brain, History, Home, Settings, Target } from 'lucide-react'
+import { Brain, History, Home, Settings, Target, FileText } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import type { DetoxSession } from '@/lib/types'
 
-const NAV = [
-  { href: '/',          icon: Home,     label: 'ホーム' },
-  { href: '/diagnosis', icon: Target,   label: '診断' },
-  { href: '/detox',     icon: Brain,    label: 'デトックス' },
-  { href: '/history',   icon: History,  label: '記録' },
-  { href: '/settings',  icon: Settings, label: '設定' },
+// PC サイドバー用（セクション分け）
+const PERSONAL_NAV = [
+  { href: '/',          icon: Home,    label: 'ホーム' },
+  { href: '/detox',     icon: Brain,   label: '脳内デトックス' },
+  { href: '/history',   icon: History, label: '記録' },
+  { href: '/diagnosis', icon: Target,  label: '診断' },
 ]
+
+const COACH_NAV = [
+  { href: '/reports', icon: FileText, label: '分析レポート' },
+]
+
+// スマホ ボトムナビ用
+const BOTTOM_NAV = [
+  { href: '/',         icon: Home,     label: 'ホーム' },
+  { href: '/detox',    icon: Brain,    label: 'デトックス' },
+  { href: '/reports',  icon: FileText, label: 'レポート' },
+  { href: '/history',  icon: History,  label: '記録' },
+  { href: '/settings', icon: Settings, label: '設定' },
+]
+
+function NavLink({ href, icon: Icon, label, pathname }: { href: string; icon: React.ElementType; label: string; pathname: string }) {
+  const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+  return (
+    <Link href={href} style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '10px 14px', borderRadius: 10, marginBottom: 2,
+      textDecoration: 'none',
+      background: active ? 'var(--primary-lt)' : 'transparent',
+      color: active ? 'var(--primary)' : 'var(--text-sub)',
+      fontWeight: active ? 700 : 400, fontSize: 14,
+      transition: 'all 0.15s',
+    }}>
+      <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
+      {label}
+    </Link>
+  )
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
   const { colorTheme, isAuthenticated, currentUser, setColorTheme, setSessions } = useStore()
 
-  // カラーテーマを常にsand（Clarityブランド）に固定
   useEffect(() => {
     setColorTheme('sand')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ログイン時にSupabaseからセッションを取得
   useEffect(() => {
     if (!isAuthenticated || !currentUser) return
     supabase
@@ -56,35 +85,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-layout">
-      {/* PC サイドバー（CSS で mobile 非表示） */}
+      {/* PC サイドバー */}
       <aside className="sidebar">
-        <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 32, letterSpacing: '-0.3px' }}>
+        <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28, letterSpacing: '-0.3px' }}>
           Clarity
         </div>
+
         <nav style={{ flex: 1 }}>
-          {NAV.map(({ href, icon: Icon, label }) => {
-            const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
-            return (
-              <Link key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '11px 14px', borderRadius: 10, marginBottom: 4,
-                textDecoration: 'none',
-                background: active ? 'var(--primary-lt)' : 'transparent',
-                color: active ? 'var(--primary)' : 'var(--text-sub)',
-                fontWeight: active ? 700 : 400, fontSize: 14,
-                transition: 'all 0.15s',
-              }}>
-                <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
-                {label}
-              </Link>
-            )
-          })}
-        </nav>
-        <div style={{ paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
-            {currentUser?.name ?? 'ユーザー'}
+          {/* 個人セクション */}
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
+            個人の記録
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{currentUser?.email}</div>
+          {PERSONAL_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} />)}
+
+          {/* 区切り */}
+          <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0 12px' }} />
+
+          {/* コーチからセクション */}
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
+            コーチから
+          </div>
+          {COACH_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} />)}
+        </nav>
+
+        {/* 設定 ＋ ユーザー情報 */}
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+          <NavLink href="/settings" icon={Settings} label="設定" pathname={pathname} />
+          <div style={{ marginTop: 10, padding: '0 4px' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+              {currentUser?.name ?? 'ユーザー'}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>{currentUser?.email}</div>
+          </div>
         </div>
       </aside>
 
@@ -92,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* スマホ ボトムナビ */}
       <nav className="bottom-nav">
-        {NAV.map(({ href, icon: Icon, label }) => {
+        {BOTTOM_NAV.map(({ href, icon: Icon, label }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
           return (
             <Link key={href} href={href} className={`bnav-item${active ? ' active' : ''}`}>
