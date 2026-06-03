@@ -26,10 +26,8 @@ const COACH_NAV = [
 const BOTTOM_NAV = [
   { href: '/',         icon: Home,        label: 'ホーム' },
   { href: '/detox',    icon: Brain,       label: 'デトックス' },
-  { href: '/checkin',  icon: CheckSquare, label: 'チェックイン' },
+  { href: '/checkin',  icon: CheckSquare, label: '日記' },
   { href: '/notes',    icon: BookOpen,    label: 'ノート' },
-  { href: '/analysis', icon: Sparkles,   label: 'AI分析' },
-  { href: '/reports',  icon: FileText,    label: 'レポート' },
   { href: '/settings', icon: Settings,    label: '設定' },
 ]
 
