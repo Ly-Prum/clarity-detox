@@ -38,3 +38,30 @@ export interface CognitiveProfile {
   processingStyle: '内省型' | '外向型'
   completedAt: string
 }
+
+export interface ThinkingPattern {
+  title: string
+  description: string
+}
+
+export interface WordConversion {
+  before: string
+  after: string
+}
+
+export interface ClarityReport {
+  id: string
+  client_code: string
+  session_date: string
+  theme: string
+  current_state: string
+  core_theme: string
+  thinking_patterns: ThinkingPattern[]
+  natural_strengths: string[]
+  word_conversions: WordConversion[]
+  challenges: string[]
+  overall: string
+  scores: Record<string, number>
+  created_at: string
+  is_read: boolean
+}
