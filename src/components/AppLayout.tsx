@@ -10,12 +10,12 @@ import type { DetoxSession, DiscoverySession } from '@/lib/types'
 // PC サイドバー用（セクション分け）
 const PERSONAL_NAV = [
   { href: '/',          icon: Home,         label: 'ホーム' },
+  { href: '/analysis',  icon: Sparkles,     label: '統合AI分析' },
   { href: '/checkin',   icon: CheckSquare,  label: 'デイリーチェックイン' },
   { href: '/detox',     icon: Brain,        label: '脳内デトックス' },
   { href: '/history',   icon: History,      label: '記録' },
   { href: '/diagnosis', icon: Target,       label: '診断' },
   { href: '/notes',     icon: BookOpen,     label: 'コーチングノート' },
-  { href: '/analysis',  icon: Sparkles,     label: '統合AI分析' },
 ]
 
 const COACH_NAV = [
