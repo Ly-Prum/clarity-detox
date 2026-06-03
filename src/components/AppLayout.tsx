@@ -77,16 +77,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .from('sessions').select('*')
       .eq('user_id', currentUser.email)
       .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) { console.error('sessions fetch error:', error); return }
+      .then(({ data }) => {
         if (data && data.length > 0) setSessions(data as DetoxSession[])
       })
     supabase
       .from('discovery_sessions').select('*')
       .eq('user_id', currentUser.email)
       .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) { console.error('discovery fetch error:', error); return }
+      .then(({ data }) => {
         if (data && data.length > 0) setDiscoverySessions(data as DiscoverySession[])
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
