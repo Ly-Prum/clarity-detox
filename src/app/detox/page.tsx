@@ -1,6 +1,7 @@
 
 'use client'
 import { useState, useEffect, useId } from 'react'
+import { useRouter } from 'next/navigation'
 import type { BrainAnalysis, BalanceKey } from '@/lib/types'
 import { useStore } from '@/lib/store'
 
@@ -302,6 +303,7 @@ function MoonOrb() {
 
 export default function DetoxPage() {
   const { addSession } = useStore()
+  const router = useRouter()
   const isDark = false
   const nightCard = isDark
     ? { background: 'rgba(14,15,26,0.82)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }
@@ -320,7 +322,7 @@ export default function DetoxPage() {
   function handleSave() {
     if (!analysis) return
     addSession(text, analysis)
-    handleReset()
+    router.push('/')
   }
 
   async function handleAnalyze() {
