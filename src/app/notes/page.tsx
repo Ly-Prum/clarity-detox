@@ -63,8 +63,10 @@ function SelfAcceptanceTab({ userId }: { userId: string }) {
     <div>
       {/* 入力フォーム */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.7, marginBottom: 20 }}>
-          今の自分をそのまま受け取る時間です。正しく書こうとしなくていいです。
+        <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.75, marginBottom: 20 }}>
+          {['今の自分をそのまま受け取る時間です。', '正しく書こうとしなくていいです。'].map((s, i) => (
+            <span key={i} style={{ display: 'block' }}>{s}</span>
+          ))}
         </div>
         {SELF_ACCEPTANCE_PROMPTS.map(({ key, label, placeholder }) => (
           <div key={key} style={{ marginBottom: 16 }}>
@@ -186,8 +188,10 @@ function PermissionTab({ userId }: { userId: string }) {
     <div>
       {/* 入力フォーム */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.7, marginBottom: 16 }}>
-          「私は、___していい」。自分に許可を出す練習です。タップして選んでください。
+        <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.75, marginBottom: 16 }}>
+          {['「私は、___していい」。', '自分に許可を出す練習です。', 'タップして選んでください。'].map((s, i) => (
+            <span key={i} style={{ display: 'block' }}>{s}</span>
+          ))}
         </div>
 
         {/* クイック選択 */}

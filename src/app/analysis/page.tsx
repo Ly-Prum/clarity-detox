@@ -139,7 +139,11 @@ export default function AnalysisPage() {
                 <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{icon}</span>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 2 }}>{label}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.65 }}>{desc}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.75 }}>
+                    {desc.split(/(?<=。)/).filter(Boolean).map((s, i) => (
+                      <span key={i} style={{ display: 'block' }}>{s}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
