@@ -200,18 +200,17 @@ export default function HomePage() {
             <Brain size={18} /> 最初のデトックスを始める
           </Link>
           {[
-            { emoji: '🧠', title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン', href: '/detox' },
-            { emoji: '🎯', title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認', href: '/detox' },
-            { emoji: '📈', title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る', href: '/history' },
-          ].map(({ emoji, title, desc, href }) => (
-            <Link key={title} href={href} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+            { emoji: '🧠', title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン' },
+            { emoji: '🎯', title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認' },
+            { emoji: '📈', title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る' },
+          ].map(({ emoji, title, desc }) => (
+            <div key={title} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 26, flexShrink: 0 }}>{emoji}</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2, color: 'var(--text)' }}>{title}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{title}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{desc}</div>
               </div>
-              <ChevronRight size={16} color="var(--primary)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-            </Link>
+            </div>
           ))}
         </div>
       </div>
