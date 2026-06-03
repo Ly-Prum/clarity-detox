@@ -28,12 +28,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute('data-color', colorTheme)
   }, [colorTheme])
 
-  if (pathname === '/login') return <>{children}</>
+  useEffect(() => {
+    if (!isAuthenticated && pathname !== '/login') {
+      router.replace('/login')
+    }
+  }, [isAuthenticated, pathname, router])
 
-  if (!isAuthenticated) {
-    router.replace('/login')
-    return null
-  }
+  if (pathname === '/login') return <>{children}</>
+  if (!isAuthenticated) return null
 
   return (
     <div className="app-layout">

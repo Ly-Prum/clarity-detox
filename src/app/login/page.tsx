@@ -10,7 +10,7 @@ export default function LoginPage() {
   const { login } = useStore()
   const router = useRouter()
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: React.SyntheticEvent) {
     e.preventDefault()
     const trimmed = code.trim().toUpperCase()
     if (!trimmed) {
@@ -52,7 +52,7 @@ export default function LoginPage() {
       </div>
 
       <p style={{ fontSize: 13, color: '#a89a8a', marginBottom: 44, fontWeight: 500, letterSpacing: '0.05em' }}>
-        inner coaching app
+        インナーコーチングアプリ
       </p>
 
       {/* 招待コード入力 */}
@@ -131,7 +131,7 @@ export default function LoginPage() {
       </div>
 
       <div style={{ marginTop: 40, fontSize: 11, color: '#d4c8bc', letterSpacing: '0.04em' }}>
-        Clarity inner coach
+        Clarity インナーコーチ
       </div>
     </div>
   )

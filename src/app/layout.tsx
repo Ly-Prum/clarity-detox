@@ -5,7 +5,7 @@ import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
   title: 'Clarity',
-  description: '自分を知り、前に進む。Clarity inner coaching app',
+  description: '自分を知り、前に進む。Clarity インナーコーチングアプリ',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Clarity',
-    description: '自分を知り、前に進む。Clarity inner coaching app',
+    description: '自分を知り、前に進む。Clarity インナーコーチングアプリ',
     siteName: 'Clarity',
     images: [
       {
         url: 'https://clarity-detox.vercel.app/clarity-logo-beige.png',
         width: 1024,
         height: 1024,
-        alt: 'Clarity inner coach',
+        alt: 'Clarity インナーコーチ',
       },
     ],
     locale: 'ja_JP',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Clarity',
-    description: '自分を知り、前に進む。Clarity inner coaching app',
+    description: '自分を知り、前に進む。Clarity インナーコーチングアプリ',
     images: ['https://clarity-detox.vercel.app/clarity-logo-beige.png'],
   },
 }
