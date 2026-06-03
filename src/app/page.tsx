@@ -160,7 +160,7 @@ function BalanceRadar({ sessions }: { sessions: DetoxSession[] }) {
 
 // ── ホームページ ──────────────────────────────────────────
 export default function HomePage() {
-  const { sessions, currentUser } = useStore()
+  const { sessions } = useStore()
   const [tab, setTab] = useState<'dashboard' | 'balance'>('dashboard')
   const streak   = useMemo(() => calcStreak(sessions), [sessions])
   const avgScore = sessions.length
@@ -188,7 +188,7 @@ export default function HomePage() {
             border: '1px solid rgba(255,255,255,0.25)',
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>Mind Detox</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>脳内デトックス</div>
           </div>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7 }}>
             頭の中を整理して、前に進める状態をつくる。
@@ -200,18 +200,18 @@ export default function HomePage() {
             <Brain size={18} /> 最初のデトックスを始める
           </Link>
           {[
-            { emoji: '🧠', title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン' },
-            { emoji: '🎯', title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認' },
-            { emoji: '📈', title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る' },
-          ].map(({ emoji, title, desc }) => (
-            <div key={title} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            { emoji: '🧠', title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン', href: '/detox' },
+            { emoji: '🎯', title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認', href: '/detox' },
+            { emoji: '📈', title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る', href: '/history' },
+          ].map(({ emoji, title, desc, href }) => (
+            <Link key={title} href={href} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
               <span style={{ fontSize: 26, flexShrink: 0 }}>{emoji}</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{title}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2, color: 'var(--text)' }}>{title}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{desc}</div>
               </div>
-              <ChevronRight size={16} color="#d1d5db" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-            </div>
+              <ChevronRight size={16} color="var(--primary)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+            </Link>
           ))}
         </div>
       </div>
