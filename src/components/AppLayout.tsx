@@ -1,12 +1,9 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Brain, History, Home, Settings, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
-
-// ログイン不要 — 初回は名前未設定でスタート、設定で変更可
-const GUEST_EMAIL = 'local@clarity-discovery.app'
 
 const NAV = [
   { href: '/',          icon: Home,     label: 'ホーム' },
@@ -18,19 +15,25 @@ const NAV = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { colorTheme, isAuthenticated, currentUser, login } = useStore()
+  const router   = useRouter()
+  const { colorTheme, isAuthenticated, currentUser, setColorTheme } = useStore()
+
+  // カラーテーマを常にsand（Clarityブランド）に固定
+  useEffect(() => {
+    setColorTheme('sand')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-color', colorTheme)
   }, [colorTheme])
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      login(GUEST_EMAIL, '')
-    }
-  }, [isAuthenticated, login])
+  if (pathname === '/login') return <>{children}</>
 
-  if (!isAuthenticated) return null
+  if (!isAuthenticated) {
+    router.replace('/login')
+    return null
+  }
 
   return (
     <div className="app-layout">
