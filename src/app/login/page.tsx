@@ -16,19 +16,26 @@ export default function LoginPage() {
     if (!trimmed) { setError('招待コードを入力してください'); return }
     setLoading(true); setError('')
 
-    const res = await fetch('/api/auth/validate-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: trimmed }),
-    })
-    const json = await res.json()
-    setLoading(false)
+    try {
+      const res = await fetch('/api/auth/validate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmed }),
+      })
+      const json = await res.json()
 
-    if (!res.ok) { setError(json.error ?? '招待コードが無効です'); return }
+      if (!res.ok) {
+        setError(json.error ?? '招待コードが無効です')
+        setLoading(false)
+        return
+      }
 
-    // 招待コードに紐づく名前・コードでログイン
-    login(`${trimmed.toLowerCase()}@clarity.app`, json.client_name, json.code)
-    router.replace('/')
+      login(`${trimmed.toLowerCase()}@clarity.app`, json.client_name, json.code)
+      router.replace('/')
+    } catch {
+      setError('通信エラーが発生しました。もう一度お試しください。')
+      setLoading(false)
+    }
   }
 
   function handleGuestLogin() {
