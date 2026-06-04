@@ -122,6 +122,28 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* 招待コード */}
+      {currentUser?.inviteCode && (
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 10 }}>あなたの招待コード</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.1em', fontFamily: 'monospace' }}>
+              {currentUser.inviteCode}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(currentUser.inviteCode)}
+              style={{ fontSize: 12, padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-faint)', fontFamily: 'inherit', flexShrink: 0 }}
+            >
+              コピー
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 8, lineHeight: 1.6 }}>
+            別のデバイスでログインするときに必要です。
+          </div>
+        </div>
+      )}
+
       {/* カラーテーマ（開閉式） */}
       <div className="card" style={{ overflow: 'hidden' }}>
         <button
