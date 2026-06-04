@@ -12,10 +12,12 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (!currentUser) return
+    // 招待コードで紐付け（なければ名前でフォールバック）
+    const lookupCode = currentUser.inviteCode || currentUser.name
     supabase
       .from('reports')
       .select('*')
-      .eq('client_code', currentUser.name)
+      .eq('client_code', lookupCode)
       .order('session_date', { ascending: false })
       .then(({ data }) => {
         if (data) setReports(data as ClarityReport[])

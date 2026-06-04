@@ -13,20 +13,26 @@ export default function LoginPage() {
   async function handleLogin(e: React.SyntheticEvent) {
     e.preventDefault()
     const trimmed = code.trim().toUpperCase()
-    if (!trimmed) {
-      setError('招待コードを入力してください')
-      return
-    }
-    setLoading(true)
-    setError('')
-    await new Promise(r => setTimeout(r, 600))
-    // 暫定：コードをそのまま名前として使用（Supabase連携後に本実装）
-    login(`${trimmed}@clarity.app`, trimmed)
+    if (!trimmed) { setError('招待コードを入力してください'); return }
+    setLoading(true); setError('')
+
+    const res = await fetch('/api/auth/validate-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: trimmed }),
+    })
+    const json = await res.json()
+    setLoading(false)
+
+    if (!res.ok) { setError(json.error ?? '招待コードが無効です'); return }
+
+    // 招待コードに紐づく名前・コードでログイン
+    login(`${trimmed.toLowerCase()}@clarity.app`, json.client_name, json.code)
     router.replace('/')
   }
 
   function handleGuestLogin() {
-    login('guest@clarity.app', '')
+    login('guest@clarity.app', 'ゲスト', '')
     router.replace('/')
   }
 

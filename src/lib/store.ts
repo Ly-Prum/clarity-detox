@@ -6,6 +6,7 @@ import { supabase } from './supabase'
 interface CurrentUser {
   email: string
   name: string
+  inviteCode: string
 }
 
 export interface DiagnosisResult {
@@ -30,7 +31,7 @@ interface AppStore {
   clearSessions: () => void
   setProfile: (profile: CognitiveProfile) => void
   setColorTheme: (color: string) => void
-  login: (email: string, name?: string) => void
+  login: (email: string, name?: string, inviteCode?: string) => void
   logout: () => void
   addDiagnosisResult: (result: DiagnosisResult) => void
   addDiscoverySession: (session: DiscoverySession) => void
@@ -71,9 +72,9 @@ export const useStore = create<AppStore>()(
       clearSessions: () => set({ sessions: [] }),
       setProfile: (profile) => set({ profile }),
       setColorTheme: (colorTheme) => set({ colorTheme }),
-      login: (email, name) => set({
+      login: (email, name, inviteCode) => set({
         isAuthenticated: true,
-        currentUser: { email, name: name ?? email.split('@')[0] },
+        currentUser: { email, name: name ?? email.split('@')[0], inviteCode: inviteCode ?? '' },
       }),
       logout: () => set({
         isAuthenticated: false,
