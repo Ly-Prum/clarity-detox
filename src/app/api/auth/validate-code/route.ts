@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (error) {
-    return NextResponse.json({ error: `DB エラー: ${error.message} (code: ${error.code})` }, { status: 500 })
+    return NextResponse.json({ error: '認証中にエラーが発生しました' }, { status: 500 })
   }
   if (!data) {
     return NextResponse.json({ error: '招待コードが見つかりません' }, { status: 404 })
