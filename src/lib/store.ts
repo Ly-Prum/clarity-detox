@@ -31,6 +31,7 @@ interface AppStore {
   clearSessions: () => void
   setProfile: (profile: CognitiveProfile) => void
   setColorTheme: (color: string) => void
+  applyColorTheme: (color: string) => void
   login: (email: string, name?: string, inviteCode?: string) => void
   logout: () => void
   addDiagnosisResult: (result: DiagnosisResult) => void
@@ -80,6 +81,7 @@ export const useStore = create<AppStore>()(
             .then(({ error }) => { if (error) console.error('color theme save error:', error) })
         }
       },
+      applyColorTheme: (colorTheme) => set({ colorTheme }),
       login: (email, name, inviteCode) => set({
         isAuthenticated: true,
         currentUser: { email, name: name ?? email.split('@')[0], inviteCode: inviteCode ?? '' },
@@ -106,6 +108,16 @@ export const useStore = create<AppStore>()(
         })
       },
     }),
-    { name: 'mind-detox-v1' }
+    {
+      name: 'mind-detox-v1',
+      partialize: (state) => ({
+        sessions: state.sessions,
+        isAuthenticated: state.isAuthenticated,
+        currentUser: state.currentUser,
+        diagnosisResults: state.diagnosisResults,
+        discoverySessions: state.discoverySessions,
+        profile: state.profile,
+      }),
+    }
   )
 )

@@ -66,7 +66,7 @@ function NavLink({
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { colorTheme, setColorTheme, isAuthenticated, currentUser, setSessions, setDiscoverySessions } = useStore()
+  const { colorTheme, setColorTheme, applyColorTheme, isAuthenticated, currentUser, setSessions, setDiscoverySessions } = useStore()
 
   const [drawerOpen,       setDrawerOpen]       = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -92,7 +92,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .eq('user_id', currentUser.email)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.color_theme) setColorTheme(data.color_theme)
+        if (data?.color_theme) applyColorTheme(data.color_theme)
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, currentUser?.email])
