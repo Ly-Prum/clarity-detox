@@ -75,8 +75,8 @@ export const useStore = create<AppStore>()(
         set({ colorTheme })
         const email = get().currentUser?.email
         if (email) {
-          supabase.from('client_profiles')
-            .upsert({ invite_code: email, color_theme: colorTheme }, { onConflict: 'invite_code' })
+          supabase.from('user_preferences')
+            .upsert({ user_id: email, color_theme: colorTheme, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
             .then(({ error }) => { if (error) console.error('color theme save error:', error) })
         }
       },

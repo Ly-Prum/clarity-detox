@@ -88,8 +88,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         if (data && data.length > 0) setDiscoverySessions(data as DiscoverySession[])
       })
     supabase
-      .from('client_profiles').select('color_theme')
-      .eq('invite_code', currentUser.email)
+      .from('user_preferences').select('color_theme')
+      .eq('user_id', currentUser.email)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.color_theme) setColorTheme(data.color_theme)
