@@ -1,14 +1,22 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
+const SAVED_CODE_KEY = 'clarity_saved_code'
+
 export default function LoginPage() {
   const [code, setCode] = useState('')
+  const [saveCode, setSaveCode] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useStore()
   const router = useRouter()
+
+  useEffect(() => {
+    const saved = localStorage.getItem(SAVED_CODE_KEY)
+    if (saved) { setCode(saved); setSaveCode(true) }
+  }, [])
 
   async function handleLogin(e: React.SyntheticEvent) {
     e.preventDefault()
@@ -30,6 +38,8 @@ export default function LoginPage() {
         return
       }
 
+      if (saveCode) localStorage.setItem(SAVED_CODE_KEY, trimmed)
+      else localStorage.removeItem(SAVED_CODE_KEY)
       login(`${trimmed.toLowerCase()}@clarity.app`, json.client_name, json.code)
       router.replace('/')
     } catch {
@@ -91,9 +101,18 @@ export default function LoginPage() {
             marginBottom: 8,
           }}
         />
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 14, lineHeight: 1.6 }}>
           Yukaさんから受け取った招待コードを入力してください。
         </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={saveCode}
+            onChange={e => setSaveCode(e.target.checked)}
+            style={{ width: 16, height: 16, accentColor: '#c9a96e', cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>このデバイスにコードを保存する</span>
+        </label>
 
         {error && (
           <div style={{ fontSize: 12, color: '#e11d48', marginBottom: 14, textAlign: 'center' }}>
