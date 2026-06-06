@@ -163,7 +163,7 @@ html, body {
 .mobile-menu-btn {
   position: fixed;
   top: 14px;
-  right: 14px;
+  left: 14px;
   z-index: 300;
   width: 38px;
   height: 38px;
