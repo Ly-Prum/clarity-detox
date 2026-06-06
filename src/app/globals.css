@@ -121,7 +121,7 @@ html, body {
 ═══════════════════════════════════════ */
 @media (min-width: 768px) {
   .app-layout {
-    max-width: 960px;
+    max-width: 1280px;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -147,6 +147,7 @@ html, body {
     flex: 1;
     min-width: 0;
     padding-bottom: 40px;
+    max-width: 900px;
   }
 
   .bottom-nav { display: none !important; }
@@ -156,6 +157,16 @@ html, body {
     width: 60px !important;
     padding: 20px 8px 24px !important;
     overflow: hidden !important;
+  }
+
+  /* スマホ専用ヘッダー要素をPC非表示 */
+  .mobile-menu-btn { display: none !important; }
+}
+
+/* PCでスクロール幅を確保 */
+@media (min-width: 1024px) {
+  .main-content {
+    padding: 0 32px 60px;
   }
 }
 
