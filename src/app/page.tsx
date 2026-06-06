@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Brain, ChevronRight } from 'lucide-react'
+import { Brain, ChevronRight, Flame, BarChart2, Sparkles } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import type { DetoxSession, BalanceKey } from '@/lib/types'
 
@@ -32,29 +32,29 @@ function calcStreak(sessions: DetoxSession[]) {
 function ScoreRing({ score, noSession }: { score: number; noSession?: boolean }) {
   const [display, setDisplay] = useState(0)
   useEffect(() => {
-    const t = setTimeout(() => setDisplay(score), 120)
+    const t = setTimeout(() => setDisplay(score), 150)
     return () => clearTimeout(t)
   }, [score])
-  const R = 86
+  const R = 80
   const CIRC = 2 * Math.PI * R
   const offset = CIRC - (display / 100) * CIRC
+  const scoreColor = display >= 70 ? '#fff' : display >= 40 ? '#fff' : 'rgba(255,255,255,0.85)'
   return (
-    <div style={{ position: 'relative', width: 214, height: 214 }}>
-      <svg width={214} height={214} viewBox="0 0 214 214" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-        <circle cx={107} cy={107} r={R} fill="none" stroke="rgba(180,149,108,0.18)" strokeWidth={18} />
-        <circle cx={107} cy={107} r={R} fill="none" stroke="#b4956c" strokeWidth={18}
+    <div style={{ position: 'relative', width: 200, height: 200 }}>
+      <svg width={200} height={200} viewBox="0 0 200 200" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+        <circle cx={100} cy={100} r={R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth={14} />
+        <circle cx={100} cy={100} r={R} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={14}
           strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 1.4s cubic-bezier(0.34,1.56,0.64,1)' }} />
+          style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1)', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <Brain size={26} color="rgba(180,149,108,0.7)" strokeWidth={1.8} />
+        <Brain size={22} color="rgba(255,255,255,0.65)" strokeWidth={1.6} />
         {noSession ? (
-          <div style={{ fontSize: 13, color: '#8a7060', textAlign: 'center', lineHeight: 1.6, marginTop: 6, padding: '0 16px' }}>今日はまだ<br />未記録です</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.6, marginTop: 6 }}>まだ<br />未記録</div>
         ) : (
           <>
-            <div style={{ fontSize: 54, fontWeight: 900, color: '#3d2010', lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
-            <div style={{ fontSize: 15, color: '#8a7060' }}>/100</div>
-            <div style={{ fontSize: 12, color: '#a89a8a', marginTop: 2 }}>達成率 {display}%</div>
+            <div style={{ fontSize: 52, fontWeight: 900, color: scoreColor, lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>/100</div>
           </>
         )}
       </div>
@@ -70,32 +70,29 @@ function WeekBars({ sessions }: { sessions: DetoxSession[] }) {
     const s = sessions.find(s => s.created_at.startsWith(key))
     return { label: DAY_LABELS[d.getDay()], isToday: key === today, session: s }
   }), [sessions, today])
-  const prevWeekScore = useMemo(() => {
-    const scores = bars.filter(b => !b.isToday && b.session).map(b => b.session!.analysis.clarity_score)
-    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
-  }, [bars])
-  const todayScore = bars.find(b => b.isToday)?.session?.analysis.clarity_score ?? null
-  const diff = todayScore !== null && prevWeekScore !== null ? todayScore - prevWeekScore : null
+
   return (
-    <div>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: 12, color: 'var(--text-faint)' }}>
-        <span>先週比: <strong style={{ color: diff !== null ? (diff >= 0 ? 'var(--green)' : 'var(--rose)') : 'var(--text-faint)' }}>{diff !== null ? (diff >= 0 ? `+${diff}` : diff) : '--'}</strong></span>
-        <span>昨日比: <strong style={{ color: 'var(--text-faint)' }}>--</strong></span>
-      </div>
-      <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 72 }}>
-        {bars.map(({ label, isToday, session }, i) => {
-          const score = session?.analysis.clarity_score ?? 0
-          const barH = session ? Math.max(5, (score / 100) * 54) : 2
-          return (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-              <div style={{ width: '100%', height: 54, display: 'flex', alignItems: 'flex-end' }}>
-                <div style={{ width: '100%', height: barH, borderRadius: '4px 4px 0 0', background: isToday ? 'var(--primary)' : session ? (NOISE_COLORS[session.analysis.noise_state] ?? 'var(--primary)') : '#e8ecf5', opacity: isToday ? 1 : session ? 0.7 : 1 }} />
-              </div>
-              <div style={{ fontSize: 10, color: isToday ? 'var(--primary)' : '#bbb', fontWeight: isToday ? 700 : 400 }}>{label}</div>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 80 }}>
+      {bars.map(({ label, isToday, session }, i) => {
+        const score = session?.analysis.clarity_score ?? 0
+        const barH = session ? Math.max(8, (score / 100) * 60) : 4
+        const color = isToday ? 'var(--primary)' : session ? (NOISE_COLORS[session.analysis.noise_state] ?? 'var(--primary)') : 'var(--bg4)'
+        return (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: '100%', height: 60, display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{
+                width: '100%', height: barH,
+                borderRadius: '6px 6px 3px 3px',
+                background: color,
+                opacity: isToday ? 1 : session ? 0.75 : 1,
+                transition: 'height 0.6s cubic-bezier(0.34,1.56,0.64,1)',
+                boxShadow: isToday ? `0 2px 8px color-mix(in srgb, var(--primary) 40%, transparent)` : 'none',
+              }} />
             </div>
-          )
-        })}
-      </div>
+            <div style={{ fontSize: 10, color: isToday ? 'var(--primary)' : 'var(--text-faint)', fontWeight: isToday ? 700 : 400 }}>{label}</div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -105,7 +102,7 @@ function BalanceRadar({ sessions }: { sessions: DetoxSession[] }) {
     acc[k] = Math.round(sessions.reduce((s, sess) => s + (sess.analysis.balance[k] ?? 0), 0) / sessions.length)
     return acc
   }, {}), [sessions])
-  const size = 180, cx = 90, cy = 90, maxR = 64, labelR = 78
+  const size = 180, cx = 90, cy = 90, maxR = 64, labelR = 80
   const n = BALANCE_KEYS.length
   const angle = (i: number) => (i * 2 * Math.PI / n) - Math.PI / 2
   const pt = (r: number, i: number) => ({ x: cx + r * Math.cos(angle(i)), y: cy + r * Math.sin(angle(i)) })
@@ -115,22 +112,21 @@ function BalanceRadar({ sessions }: { sessions: DetoxSession[] }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
       {[25, 50, 75, 100].map(lv => {
         const pts = BALANCE_KEYS.map((_, i) => { const p = pt((lv / 100) * maxR, i); return `${p.x},${p.y}` }).join(' ')
-        return <polygon key={lv} points={pts} fill="none" stroke="#e5e8f0" strokeWidth="1" />
+        return <polygon key={lv} points={pts} fill="none" stroke="var(--border)" strokeWidth="1" opacity="0.8" />
       })}
-      {BALANCE_KEYS.map((_, i) => { const p = pt(maxR, i); return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#e5e8f0" strokeWidth="1" /> })}
-      <polygon points={dataPoints} fill="var(--primary)" opacity="0.15" stroke="var(--primary)" strokeWidth="2" />
-      {BALANCE_KEYS.map((k, i) => { const p = pt((avg[k] / 100) * maxR, i); return <circle key={i} cx={p.x} cy={p.y} r={4} fill={BALANCE_COLORS[k]} stroke="#fff" strokeWidth="1.5" /> })}
+      {BALANCE_KEYS.map((_, i) => { const p = pt(maxR, i); return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--border)" strokeWidth="1" /> })}
+      <polygon points={dataPoints} fill="var(--primary)" opacity="0.15" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" />
+      {BALANCE_KEYS.map((k, i) => { const p = pt((avg[k] / 100) * maxR, i); return <circle key={i} cx={p.x} cy={p.y} r={5} fill={BALANCE_COLORS[k]} stroke="#fff" strokeWidth="2" /> })}
       {BALANCE_KEYS.map((k, i) => {
         const p = pt(labelR, i)
-        return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill="#9ca3af">{short(k)}</text>
+        return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill="var(--text-faint)" fontWeight="600">{short(k)}</text>
       })}
     </svg>
   )
 }
 
-// ── ホームページ ──────────────────────────────────────────
 export default function HomePage() {
-  const { sessions } = useStore()
+  const { sessions, currentUser } = useStore()
   const [tab, setTab] = useState<'dashboard' | 'balance'>('dashboard')
   const streak = useMemo(() => calcStreak(sessions), [sessions])
   const avgScore = sessions.length
@@ -138,36 +134,34 @@ export default function HomePage() {
     : null
   const today = new Date().toISOString().split('T')[0]
   const todaySession = sessions.find(s => s.created_at.startsWith(today))
+  const name = currentUser?.name?.replace('@clarity.app', '') ?? ''
 
   /* ── オンボーディング ── */
   if (!sessions.length) {
     return (
-      <div>
-        <div style={{ background: 'var(--primary)', padding: '32px 20px 36px', borderRadius: '0 0 32px 32px', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 75% 20%, rgba(255,255,255,0.15) 0%, transparent 55%)', pointerEvents: 'none' }} />
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
-            {new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
-          </div>
-          <div className="breathing-orb" style={{ width: 72, height: 72, margin: '0 auto 20px' }} />
-          <div style={{ display: 'inline-block', padding: '14px 28px', borderRadius: 20, marginBottom: 8, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>脳内デトックス</div>
-          </div>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7 }}>頭の中を整理して、前に進める状態をつくる。</p>
+      <div style={{ minHeight: '100vh' }}>
+        {/* ヒーロー */}
+        <div style={{ background: 'var(--primary)', padding: '52px 24px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 70% 20%, rgba(255,255,255,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+          <div className="breathing-orb" style={{ width: 80, height: 80, margin: '0 auto 24px', boxShadow: '0 0 40px rgba(255,255,255,0.3)' }} />
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 10, letterSpacing: '-0.5px' }}>脳内デトックス</h1>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8 }}>頭の中を整理して、<br />前に進める状態をつくる。</p>
         </div>
-        <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ padding: '24px 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Link href="/detox" className="btn-pill" style={{ textDecoration: 'none' }}>
             <Brain size={18} /> 最初のデトックスを始める
           </Link>
           {[
-            { emoji: '🧠', title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン' },
-            { emoji: '🎯', title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認' },
-            { emoji: '📈', title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る' },
-          ].map(({ emoji, title, desc }) => (
-            <div key={title} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 26, flexShrink: 0 }}>{emoji}</span>
+            { icon: <Brain size={22} color="var(--primary)" />, title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン' },
+            { icon: <BarChart2 size={22} color="var(--primary)" />, title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認' },
+            { icon: <Sparkles size={22} color="var(--primary)" />, title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る' },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{desc}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 3, color: 'var(--text)' }}>{title}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.5 }}>{desc}</div>
               </div>
             </div>
           ))}
@@ -176,139 +170,181 @@ export default function HomePage() {
     )
   }
 
-  /* ── ダッシュボード ── */
+  /* ── メインダッシュボード ── */
   return (
-    <div style={{ background: 'var(--bg)' }}>
-      <div style={{ background: '#ffffff', padding: '18px 20px 24px', position: 'relative', overflow: 'hidden', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <div style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--primary-lt)', fontSize: 12, color: 'var(--primary)', fontWeight: 700, marginLeft: 46 }}>🔥 {streak}日連続</div>
-          <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}</div>
-          <Link href="/settings" style={{ textDecoration: 'none' }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', background: '#fff', border: '1.5px solid rgba(180,149,108,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+
+      {/* ── ヒーローヘッダー ── */}
+      <div style={{ background: 'var(--primary)', padding: '20px 20px 32px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15) 0%, transparent 55%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -60, left: -30, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+        {/* 上部ヘッダー */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingLeft: 46, position: 'relative', zIndex: 1 }}>
+          <div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 2 }}>
+              {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
+            </div>
+            {name && <div style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>こんにちは、{name}さん</div>}
+          </div>
+          <Link href="/settings" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.3)' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/clarity-logo.png" alt="設定" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+              <img src="/clarity-logo.png" alt="設定" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: '50%' }} />
             </div>
           </Link>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+
+        {/* スコアリング */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, position: 'relative', zIndex: 1 }}>
           <ScoreRing score={todaySession?.analysis.clarity_score ?? 0} noSession={!todaySession} />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {[
-            { label: '連続記録', value: `${streak}日`, icon: '🔥' },
-            { label: '総セッション', value: `${sessions.length}回`, icon: '📊' },
-          ].map(({ label, value, icon }) => (
-            <div key={label} style={{ background: 'rgba(180,149,108,0.12)', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 22 }}>{icon}</span>
-              <div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#3d2010', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 11, color: '#8a7060', marginTop: 3 }}>{label}</div>
+          <div style={{ flex: 1 }}>
+            {todaySession ? (
+              <>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 6 }}>今日のコンディション</div>
+                <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
+                  {todaySession.analysis.noise_state}
+                </div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7 }}>{todaySession.analysis.summary}</p>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 6 }}>今日はまだ未記録です</div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>脳内デトックスで今日の状態を確認しましょう</p>
+              </>
+            )}
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', padding: '5px 12px', borderRadius: 20 }}>
+                <Flame size={13} color="rgba(255,255,255,0.9)" />
+                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{streak}日</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', padding: '5px 12px', borderRadius: 20 }}>
+                <BarChart2 size={13} color="rgba(255,255,255,0.9)" />
+                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{sessions.length}回</span>
               </div>
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* デトックスボタン */}
+        <div style={{ marginTop: 20, position: 'relative', zIndex: 1 }}>
+          <Link href="/detox" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '14px', borderRadius: 50, textDecoration: 'none',
+            background: 'rgba(255,255,255,0.22)', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.35)',
+            fontSize: 15, fontWeight: 700, letterSpacing: '0.02em',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          }}>
+            <Brain size={18} />
+            {todaySession ? 'もう一度デトックスする' : '脳内デトックスを始める'}
+          </Link>
         </div>
       </div>
 
-      <div style={{ padding: '14px 16px', background: '#fff', borderBottom: '1px solid var(--border)' }}>
-        <Link href="/detox" className="btn-pill" style={{ textDecoration: 'none' }}>
-          <Brain size={18} />
-          {todaySession ? 'もう一度デトックスする' : '脳内デトックスを始める'}
-        </Link>
-      </div>
-
+      {/* タブ */}
       <div className="page-tab-bar">
         <button className={`page-tab-btn${tab === 'dashboard' ? ' active' : ''}`} onClick={() => setTab('dashboard')}>ダッシュボード</button>
         <button className={`page-tab-btn${tab === 'balance' ? ' active' : ''}`} onClick={() => setTab('balance')}>バランス</button>
       </div>
 
+      {/* ── ダッシュボードタブ ── */}
       {tab === 'dashboard' && (
-        <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* 今日のアドバイス */}
           {todaySession && (
-            <div className="card" style={{ padding: '16px' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 12 }}>今日のコンディション</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-                <span style={{ padding: '4px 12px', borderRadius: 20, background: `${NOISE_COLORS[todaySession.analysis.noise_state] ?? '#6366f1'}15`, color: NOISE_COLORS[todaySession.analysis.noise_state] ?? '#6366f1', fontSize: 13, fontWeight: 700, border: `1px solid ${NOISE_COLORS[todaySession.analysis.noise_state] ?? '#6366f1'}30` }}>
+            <div className="card" style={{ padding: '18px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 12 }}>今日のアドバイス</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                <span style={{ padding: '4px 12px', borderRadius: 20, background: `${NOISE_COLORS[todaySession.analysis.noise_state] ?? '#6366f1'}15`, color: NOISE_COLORS[todaySession.analysis.noise_state] ?? '#6366f1', fontSize: 12, fontWeight: 700 }}>
                   {todaySession.analysis.noise_state}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--text-sub)' }}>ノイズ <strong>{todaySession.analysis.noise_level}</strong></span>
                 {todaySession.analysis.dominant && (
-                  <span style={{ padding: '3px 10px', borderRadius: 10, background: `${BALANCE_COLORS[todaySession.analysis.dominant]}15`, color: BALANCE_COLORS[todaySession.analysis.dominant], fontSize: 11, fontWeight: 600 }}>
+                  <span style={{ padding: '4px 12px', borderRadius: 20, background: `${BALANCE_COLORS[todaySession.analysis.dominant]}12`, color: BALANCE_COLORS[todaySession.analysis.dominant], fontSize: 12, fontWeight: 600 }}>
                     {todaySession.analysis.dominant}
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: 10 }}>{todaySession.analysis.summary}</p>
-              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'var(--primary-lt)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--text)', lineHeight: 1.6 }}>
-                💡 {todaySession.analysis.advice}
+              <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--primary-lt)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7 }}>
+                {todaySession.analysis.advice}
               </div>
             </div>
           )}
-          <div className="card" style={{ padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>📊 整理スコア</div>
-              <Link href="/history" style={{ fontSize: 12, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>全記録 <ChevronRight size={13} /></Link>
+
+          {/* 週間スコア */}
+          <div className="card" style={{ padding: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>週間スコア</div>
+              <Link href="/history" style={{ fontSize: 12, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+                全記録 <ChevronRight size={13} />
+              </Link>
             </div>
             <WeekBars sessions={sessions} />
           </div>
-          <div className="card" style={{ padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>直近の記録</div>
-              <Link href="/history" style={{ fontSize: 12, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>すべて見る <ChevronRight size={13} /></Link>
+
+          {/* 直近の記録 */}
+          <div className="card" style={{ padding: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>直近の記録</div>
+              <Link href="/history" style={{ fontSize: 12, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+                すべて <ChevronRight size={13} />
+              </Link>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {sessions.slice(0, 3).map((s, i) => {
-                const c = NOISE_COLORS[s.analysis.noise_state] ?? '#6366f1'
-                return (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
-                    <div style={{ minWidth: 44, textAlign: 'center' }}>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>{s.analysis.clarity_score}</div>
-                      <div style={{ fontSize: 9, color: 'var(--text-faint)' }}>スコア</div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
-                        <span style={{ padding: '2px 8px', borderRadius: 8, background: `${c}15`, color: c, fontSize: 11, fontWeight: 700 }}>{s.analysis.noise_state}</span>
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-                        {new Date(s.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-faint)', whiteSpace: 'nowrap' }}>ノイズ {s.analysis.noise_level}</div>
+            {sessions.slice(0, 3).map((s, i) => {
+              const c = NOISE_COLORS[s.analysis.noise_state] ?? '#6366f1'
+              return (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: `${c}15`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: c, lineHeight: 1 }}>{s.analysis.clarity_score}</div>
+                    <div style={{ fontSize: 8, color: c, opacity: 0.8, fontWeight: 600 }}>pt</div>
                   </div>
-                )
-              })}
-            </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 3 }}>
+                      <span style={{ padding: '2px 10px', borderRadius: 20, background: `${c}15`, color: c, fontSize: 11, fontWeight: 700 }}>{s.analysis.noise_state}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+                      {new Date(s.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-faint)', flexShrink: 0 }}>ノイズ {s.analysis.noise_level}</div>
+                </div>
+              )
+            })}
           </div>
-          <div style={{ height: 4 }} />
+          <div style={{ height: 8 }} />
         </div>
       )}
 
+      {/* ── バランスタブ ── */}
       {tab === 'balance' && (
-        <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, alignSelf: 'flex-start', marginBottom: 16 }}>バランスマップ（平均）</div>
+        <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, alignSelf: 'flex-start', marginBottom: 20, color: 'var(--text)' }}>バランスマップ（平均）</div>
             <BalanceRadar sessions={sessions} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, width: '100%', marginTop: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', marginTop: 20 }}>
               {BALANCE_KEYS.map(k => {
                 const avg = Math.round(sessions.reduce((s, sess) => s + (sess.analysis.balance[k] ?? 0), 0) / sessions.length)
                 return (
-                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: BALANCE_COLORS[k], flexShrink: 0 }} />
-                    <div style={{ flex: 1, fontSize: 11, color: 'var(--text-sub)' }}>{k}</div>
-                    <div style={{ width: 60, height: 5, borderRadius: 3, background: '#e8ecf5', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${avg}%`, background: BALANCE_COLORS[k] }} />
+                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: BALANCE_COLORS[k], flexShrink: 0 }} />
+                    <div style={{ flex: 1, fontSize: 12, color: 'var(--text-sub)', fontWeight: 500 }}>{k}</div>
+                    <div style={{ width: 80, height: 6, borderRadius: 4, background: 'var(--bg4)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${avg}%`, background: BALANCE_COLORS[k], borderRadius: 4 }} />
                     </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: BALANCE_COLORS[k], minWidth: 24, textAlign: 'right' }}>{avg}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: BALANCE_COLORS[k], minWidth: 28, textAlign: 'right' }}>{avg}</div>
                   </div>
                 )
               })}
             </div>
           </div>
-          <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 6 }}>過去10回の平均整理スコア</div>
-            <div style={{ fontSize: 48, fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>{avgScore ?? '--'}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 4 }}>/100</div>
+
+          <div className="card" style={{ padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>過去10回の平均スコア</div>
+            <div style={{ fontSize: 56, fontWeight: 900, color: 'var(--primary)', lineHeight: 1, letterSpacing: '-2px' }}>{avgScore ?? '--'}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 6 }}>/100</div>
           </div>
-          <div style={{ height: 4 }} />
+          <div style={{ height: 8 }} />
         </div>
       )}
     </div>
