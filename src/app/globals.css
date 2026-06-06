@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+
 /* ═══════════════════════════════════════
    COLOR THEME — 30色
 ═══════════════════════════════════════ */
@@ -70,12 +72,14 @@
 html, body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans JP', 'Hiragino Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
   font-size: 15px;
-  line-height: 1.65;
+  font-weight: 400;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
 }
 
 /* ═══════════════════════════════════════
@@ -168,10 +172,23 @@ html, body {
   .mobile-menu-btn { display: none !important; }
 }
 
-/* PCでスクロール幅を確保 */
-@media (min-width: 1024px) {
+/* PC：コンテンツ幅を制限して中央寄せ */
+@media (min-width: 768px) {
   .main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-content {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
     padding: 0 32px 60px;
+  }
+}
+@media (min-width: 1024px) {
+  .page-content {
+    padding: 0 40px 60px;
   }
 }
 

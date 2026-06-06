@@ -35,26 +35,25 @@ function ScoreRing({ score, noSession }: { score: number; noSession?: boolean })
     const t = setTimeout(() => setDisplay(score), 150)
     return () => clearTimeout(t)
   }, [score])
-  const R = 80
+  const R = 76
   const CIRC = 2 * Math.PI * R
   const offset = CIRC - (display / 100) * CIRC
-  const scoreColor = display >= 70 ? '#fff' : display >= 40 ? '#fff' : 'rgba(255,255,255,0.85)'
   return (
-    <div style={{ position: 'relative', width: 200, height: 200 }}>
-      <svg width={200} height={200} viewBox="0 0 200 200" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-        <circle cx={100} cy={100} r={R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth={14} />
-        <circle cx={100} cy={100} r={R} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={14}
+    <div style={{ position: 'relative', width: 192, height: 192 }}>
+      <svg width={192} height={192} viewBox="0 0 192 192" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+        <circle cx={96} cy={96} r={R} fill="none" stroke="var(--primary-lt)" strokeWidth={12} />
+        <circle cx={96} cy={96} r={R} fill="none" stroke="var(--primary)" strokeWidth={12}
           strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1)', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }} />
+          style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1)' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <Brain size={22} color="rgba(255,255,255,0.65)" strokeWidth={1.6} />
+        <Brain size={20} color="var(--primary)" strokeWidth={1.4} style={{ opacity: 0.7 }} />
         {noSession ? (
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.6, marginTop: 6 }}>まだ<br />未記録</div>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)', textAlign: 'center', lineHeight: 1.6, marginTop: 4 }}>まだ<br />未記録</div>
         ) : (
           <>
-            <div style={{ fontSize: 52, fontWeight: 900, color: scoreColor, lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>/100</div>
+            <div style={{ fontSize: 48, fontWeight: 700, color: 'var(--text)', lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 400 }}>/100</div>
           </>
         )}
       </div>
@@ -174,71 +173,69 @@ export default function HomePage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
-      {/* ── ヒーローヘッダー ── */}
-      <div style={{ background: 'var(--primary)', padding: '20px 20px 32px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15) 0%, transparent 55%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -60, left: -30, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-
-        {/* 上部ヘッダー */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingLeft: 46, position: 'relative', zIndex: 1 }}>
-          <div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 2 }}>
-              {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
+      {/* ── ガラスヘッダー ── */}
+      <div style={{
+        background: 'rgba(255,255,255,0.72)',
+        WebkitBackdropFilter: 'blur(24px)', backdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(0,0,0,0.07)',
+        padding: '20px 20px 24px',
+        position: 'sticky', top: 0, zIndex: 100,
+      }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {/* 上部ヘッダー */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingLeft: 46 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 2, fontWeight: 400 }}>
+                {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
+              </div>
+              {name && <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>こんにちは、{name}さん</div>}
             </div>
-            {name && <div style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>こんにちは、{name}さん</div>}
+            <Link href="/settings" style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--primary)', opacity: 0.8 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/clarity-logo.png" alt="設定" style={{ width: 26, height: 26, objectFit: 'contain', borderRadius: '50%' }} />
+              </div>
+            </Link>
           </div>
-          <Link href="/settings" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.3)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/clarity-logo.png" alt="設定" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: '50%' }} />
-            </div>
-          </Link>
-        </div>
 
-        {/* スコアリング */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, position: 'relative', zIndex: 1 }}>
-          <ScoreRing score={todaySession?.analysis.clarity_score ?? 0} noSession={!todaySession} />
-          <div style={{ flex: 1 }}>
-            {todaySession ? (
-              <>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 6 }}>今日のコンディション</div>
-                <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
-                  {todaySession.analysis.noise_state}
+          {/* スコアリング + 情報 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <ScoreRing score={todaySession?.analysis.clarity_score ?? 0} noSession={!todaySession} />
+            <div style={{ flex: 1 }}>
+              {todaySession ? (
+                <>
+                  <div style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 8, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.5px' }}>今日のコンディション</div>
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 20, background: 'var(--primary-lt)', color: 'var(--primary)', fontSize: 13, fontWeight: 600, marginBottom: 10 }}>
+                    {todaySession.analysis.noise_state}
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7, fontWeight: 400 }}>{todaySession.analysis.summary}</p>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)', marginBottom: 6 }}>今日はまだ未記録です</div>
+                  <p style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.6, fontWeight: 400 }}>デトックスで今日の状態を確認しましょう</p>
+                </>
+              )}
+              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--bg3)', padding: '5px 12px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                  <Flame size={12} color="var(--primary)" />
+                  <span style={{ fontSize: 12, color: 'var(--text-sub)', fontWeight: 500 }}>{streak}日連続</span>
                 </div>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7 }}>{todaySession.analysis.summary}</p>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 6 }}>今日はまだ未記録です</div>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>脳内デトックスで今日の状態を確認しましょう</p>
-              </>
-            )}
-            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', padding: '5px 12px', borderRadius: 20 }}>
-                <Flame size={13} color="rgba(255,255,255,0.9)" />
-                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{streak}日</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', padding: '5px 12px', borderRadius: 20 }}>
-                <BarChart2 size={13} color="rgba(255,255,255,0.9)" />
-                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{sessions.length}回</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--bg3)', padding: '5px 12px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                  <BarChart2 size={12} color="var(--primary)" />
+                  <span style={{ fontSize: 12, color: 'var(--text-sub)', fontWeight: 500 }}>{sessions.length}回</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* デトックスボタン */}
-        <div style={{ marginTop: 20, position: 'relative', zIndex: 1 }}>
-          <Link href="/detox" style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '14px', borderRadius: 50, textDecoration: 'none',
-            background: 'rgba(255,255,255,0.22)', color: '#fff',
-            border: '1.5px solid rgba(255,255,255,0.35)',
-            fontSize: 15, fontWeight: 700, letterSpacing: '0.02em',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}>
-            <Brain size={18} />
-            {todaySession ? 'もう一度デトックスする' : '脳内デトックスを始める'}
-          </Link>
+          {/* デトックスボタン */}
+          <div style={{ marginTop: 20 }}>
+            <Link href="/detox" className="btn-pill" style={{ textDecoration: 'none' }}>
+              <Brain size={17} />
+              {todaySession ? 'もう一度デトックスする' : '脳内デトックスを始める'}
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -250,7 +247,7 @@ export default function HomePage() {
 
       {/* ── ダッシュボードタブ ── */}
       {tab === 'dashboard' && (
-        <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="page-content" style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
 
           {/* 今日のアドバイス */}
           {todaySession && (
@@ -318,7 +315,7 @@ export default function HomePage() {
 
       {/* ── バランスタブ ── */}
       {tab === 'balance' && (
-        <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="page-content" style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <div className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 700, alignSelf: 'flex-start', marginBottom: 20, color: 'var(--text)' }}>バランスマップ（平均）</div>
             <BalanceRadar sessions={sessions} />
