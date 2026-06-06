@@ -210,26 +210,12 @@ html, body {
 .coach-layout {
   display: flex;
   min-height: 100vh;
-  background: #0f172a;
-  --bg:         #0f172a;
-  --bg2:        #1e293b;
-  --bg3:        #1e293b;
-  --bg4:        #334155;
-  --card:       #1e293b;
-  --border:     rgba(255,255,255,0.08);
-  --text:       #f1f5f9;
-  --text-sub:   #94a3b8;
-  --text-faint: #64748b;
-  --shadow:     0 2px 12px rgba(0,0,0,0.35);
-  --shadow-sm:  0 1px 4px rgba(0,0,0,0.2);
-  --primary:    #3b82f6;
-  --primary-lt: rgba(59,130,246,0.15);
 }
 
 .coach-sidebar {
   width: 100%;
   height: auto;
-  background: #1e293b;
+  background: #0f172a;
   display: flex;
   flex-direction: column;
   padding: 20px 16px 24px;
@@ -240,8 +226,23 @@ html, body {
 .coach-main {
   flex: 1;
   min-width: 0;
-  background: #0f172a;
-  padding: 28px 20px 60px;
+  padding: 28px 24px 60px;
+  background: #f1f5f9;
+  --bg:         #f1f5f9;
+  --bg2:        #ffffff;
+  --bg3:        #f8fafc;
+  --card:       #ffffff;
+  --border:     #e2e8f0;
+  --text:       #0f172a;
+  --text-sub:   #475569;
+  --text-faint: #94a3b8;
+  --rose:       #ef4444;
+  --green:      #22c55e;
+  --amber:      #f59e0b;
+  --shadow:     0 1px 8px rgba(0,0,0,0.08);
+  --r:          12px;
+  --primary:    #3b82f6;
+  --primary-lt: rgba(59,130,246,0.1);
 }
 
 @media (min-width: 768px) {
@@ -267,6 +268,45 @@ html, body {
 
   .coach-main { padding: 32px 40px 60px; }
 }
+
+/* ═══════════════════════════════════════
+   COACH ADMIN — ユーティリティ
+═══════════════════════════════════════ */
+.coach-main .page-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+.coach-main .page-sub   { font-size: 13px; color: var(--text-faint); margin-bottom: 24px; }
+
+.coach-main .stat-card {
+  background: var(--card); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 20px 24px;
+  box-shadow: var(--shadow);
+}
+
+.coach-main .btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 8px; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s; text-decoration: none;
+}
+.coach-main .btn:hover { opacity: 0.85; }
+.coach-main .btn-primary { background: var(--primary); color: #fff; }
+.coach-main .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
+.coach-main .btn-danger  { background: var(--rose); color: #fff; }
+
+.coach-main input,
+.coach-main textarea,
+.coach-main select {
+  width: 100%; padding: 9px 12px; border-radius: 8px;
+  border: 1px solid var(--border); font-family: inherit;
+  font-size: 13px; background: var(--bg2); color: var(--text); outline: none;
+}
+.coach-main input:focus,
+.coach-main textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt); }
+
+.coach-main table { width: 100%; border-collapse: collapse; }
+.coach-main th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+.coach-main td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text); }
+.coach-main tr:last-child td { border-bottom: none; }
+.coach-main tr:hover td { background: var(--bg3); }
 
 /* ═══════════════════════════════════════
    CARDS
