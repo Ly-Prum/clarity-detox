@@ -121,11 +121,12 @@ html, body {
 ═══════════════════════════════════════ */
 @media (min-width: 768px) {
   .app-layout {
-    max-width: 1280px;
+    max-width: 100%;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     min-height: 100vh;
+    margin: 0;
   }
 
   .sidebar {
@@ -147,7 +148,6 @@ html, body {
     flex: 1;
     min-width: 0;
     padding-bottom: 40px;
-    max-width: 900px;
   }
 
   .bottom-nav { display: none !important; }
