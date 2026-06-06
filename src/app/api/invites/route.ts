@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 function buildEmail(clientName: string, code: string) {
   return `<!DOCTYPE html>
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   const { error } = await supabase.from('invite_codes').insert(body)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  if (email?.trim()) {
+  if (email?.trim() && resend != null) {
     const { error: mailError } = await resend.emails.send({
       from: 'Clarity <onboarding@resend.dev>',
       to: email.trim(),
