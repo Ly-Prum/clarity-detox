@@ -157,18 +157,6 @@ html, body {
     flex: 1;
     min-width: 0;
     padding-bottom: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  /* 全ページを一括でPC幅に統一 */
-  .main-content > div {
-    width: 100% !important;
-    max-width: 720px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    box-sizing: border-box;
   }
 
   .bottom-nav { display: none !important; }
@@ -184,11 +172,21 @@ html, body {
   .mobile-menu-btn { display: none !important; }
 }
 
-/* PC：ページコンテンツ内部の余白 */
+/* PC：ページ幅をフル活用 */
 @media (min-width: 768px) {
+  .main-content > div {
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    box-sizing: border-box !important;
+  }
+
   .page-content {
-    padding-left: 32px;
-    padding-right: 32px;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
