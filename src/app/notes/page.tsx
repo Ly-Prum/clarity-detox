@@ -35,6 +35,12 @@ function SelfAcceptanceTab({ userId }: { userId: string }) {
   const [saved, setSaved] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
 
+  async function handleDelete(id: string) {
+    if (!confirm('この記録を削除しますか？')) return
+    await supabase.from('coaching_notes').delete().eq('id', id)
+    setNotes(prev => prev.filter(n => n.id !== id))
+  }
+
   useEffect(() => {
     supabase.from('coaching_notes').select('*')
       .eq('user_id', userId).eq('type', 'self_acceptance')
@@ -105,17 +111,20 @@ function SelfAcceptanceTab({ userId }: { userId: string }) {
             const c = n.content as SelfAcceptanceContent
             return (
               <div key={n.id} className="card" style={{ marginBottom: 8, overflow: 'hidden' }}>
-                <button
-                  type="button"
-                  onClick={() => setOpenId(openId === n.id ? null : n.id)}
-                  style={{ width: '100%', padding: '12px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <div>
-                    <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 700, marginBottom: 2 }}>{formatDate(n.created_at)}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>{c.state || c.message || '（記録あり）'}</div>
-                  </div>
-                  <span style={{ color: 'var(--text-faint)', fontSize: 18, flexShrink: 0 }}>{openId === n.id ? '∧' : '∨'}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenId(openId === n.id ? null : n.id)}
+                    style={{ flex: 1, padding: '12px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 700, marginBottom: 2 }}>{formatDate(n.created_at)}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{c.state || c.message || '（記録あり）'}</div>
+                    </div>
+                    <span style={{ color: 'var(--text-faint)', fontSize: 18, flexShrink: 0 }}>{openId === n.id ? '∧' : '∨'}</span>
+                  </button>
+                  <button type="button" onClick={() => handleDelete(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '12px 12px', color: '#e11d48', opacity: 0.5, fontSize: 16 }} title="削除">×</button>
+                </div>
                 {openId === n.id && (
                   <div style={{ padding: '0 14px 16px', borderTop: '1px solid var(--border)' }}>
                     {SELF_ACCEPTANCE_PROMPTS.map(({ key, label }) => {
@@ -147,6 +156,12 @@ function PermissionTab({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+
+  async function handleDelete(id: string) {
+    if (!confirm('この記録を削除しますか？')) return
+    await supabase.from('coaching_notes').delete().eq('id', id)
+    setNotes(prev => prev.filter(n => n.id !== id))
+  }
 
   useEffect(() => {
     supabase.from('coaching_notes').select('*')
@@ -271,17 +286,20 @@ function PermissionTab({ userId }: { userId: string }) {
             const c = n.content as PermissionContent
             return (
               <div key={n.id} className="card" style={{ marginBottom: 8, overflow: 'hidden' }}>
-                <button
-                  type="button"
-                  onClick={() => setOpenId(openId === n.id ? null : n.id)}
-                  style={{ width: '100%', padding: '12px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <div>
-                    <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 700, marginBottom: 2 }}>{formatDate(n.created_at)}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-sub)' }}>{c.permissions.length}個の許可</div>
-                  </div>
-                  <span style={{ color: 'var(--text-faint)', fontSize: 18, flexShrink: 0 }}>{openId === n.id ? '∧' : '∨'}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenId(openId === n.id ? null : n.id)}
+                    style={{ flex: 1, padding: '12px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 700, marginBottom: 2 }}>{formatDate(n.created_at)}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-sub)' }}>{c.permissions.length}個の許可</div>
+                    </div>
+                    <span style={{ color: 'var(--text-faint)', fontSize: 18, flexShrink: 0 }}>{openId === n.id ? '∧' : '∨'}</span>
+                  </button>
+                  <button type="button" onClick={() => handleDelete(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '12px 12px', color: '#e11d48', opacity: 0.5, fontSize: 16 }} title="削除">×</button>
+                </div>
                 {openId === n.id && (
                   <div style={{ padding: '8px 14px 16px', borderTop: '1px solid var(--border)' }}>
                     {c.permissions.map((p, i) => (

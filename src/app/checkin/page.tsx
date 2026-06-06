@@ -43,6 +43,12 @@ export default function CheckInPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
+  async function handleDeleteToday() {
+    if (!todayCheckin || !confirm('今日の記録を削除して入力し直しますか？')) return
+    await supabase.from('checkins').delete().eq('id', todayCheckin.id)
+    setCheckins(prev => prev.filter(c => c.date !== today))
+  }
+
   const [mood, setMood] = useState<number | null>(null)
   const [theme, setTheme] = useState<string | null>(null)
   const [highlight, setHighlight] = useState<string | null>(null)
@@ -130,6 +136,7 @@ export default function CheckInPage() {
             </div>
             {todayCheckin.memo && <div style={{ fontSize: 12, color: 'var(--text-sub)', marginTop: 4, fontStyle: 'italic' }}>「{todayCheckin.memo}」</div>}
           </div>
+          <button type="button" onClick={handleDeleteToday} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e11d48', opacity: 0.4, fontSize: 18, padding: 4 }} title="削除して入力し直す">×</button>
         </div>
       ) : (
         <div className="card" style={{ padding: 20, marginBottom: 20 }}>
