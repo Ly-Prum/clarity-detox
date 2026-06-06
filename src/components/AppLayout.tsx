@@ -66,7 +66,7 @@ function NavLink({
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { colorTheme, isAuthenticated, currentUser, setSessions, setDiscoverySessions } = useStore()
+  const { colorTheme, setColorTheme, isAuthenticated, currentUser, setSessions, setDiscoverySessions } = useStore()
 
   const [drawerOpen,       setDrawerOpen]       = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -86,6 +86,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (data && data.length > 0) setDiscoverySessions(data as DiscoverySession[])
+      })
+    supabase
+      .from('client_profiles').select('color_theme')
+      .eq('invite_code', currentUser.email)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.color_theme) setColorTheme(data.color_theme)
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, currentUser?.email])

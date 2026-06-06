@@ -71,7 +71,15 @@ export const useStore = create<AppStore>()(
       },
       clearSessions: () => set({ sessions: [] }),
       setProfile: (profile) => set({ profile }),
-      setColorTheme: (colorTheme) => set({ colorTheme }),
+      setColorTheme: (colorTheme) => {
+        set({ colorTheme })
+        const email = get().currentUser?.email
+        if (email) {
+          supabase.from('client_profiles')
+            .upsert({ invite_code: email, color_theme: colorTheme }, { onConflict: 'invite_code' })
+            .then(({ error }) => { if (error) console.error('color theme save error:', error) })
+        }
+      },
       login: (email, name, inviteCode) => set({
         isAuthenticated: true,
         currentUser: { email, name: name ?? email.split('@')[0], inviteCode: inviteCode ?? '' },
