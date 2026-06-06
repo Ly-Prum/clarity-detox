@@ -179,10 +179,10 @@ export default function HomePage() {
   /* ── ダッシュボード ── */
   return (
     <div style={{ background: 'var(--bg)' }}>
-      <div style={{ background: 'linear-gradient(160deg, #fdf8f2 0%, #f2e6d8 100%)', padding: '18px 20px 24px', position: 'relative', overflow: 'hidden', borderBottom: '1px solid #ece0d0' }}>
+      <div style={{ background: '#ffffff', padding: '18px 20px 24px', position: 'relative', overflow: 'hidden', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <div style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(180,149,108,0.15)', fontSize: 12, color: '#b4956c', fontWeight: 700, marginLeft: 46 }}>🔥 {streak}日連続</div>
-          <div style={{ fontSize: 12, color: '#8a7060', fontWeight: 500 }}>{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}</div>
+          <div style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--primary-lt)', fontSize: 12, color: 'var(--primary)', fontWeight: 700, marginLeft: 46 }}>🔥 {streak}日連続</div>
+          <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}</div>
           <Link href="/settings" style={{ textDecoration: 'none' }}>
             <div style={{ width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', background: '#fff', border: '1.5px solid rgba(180,149,108,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
