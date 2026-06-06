@@ -9,7 +9,7 @@ const AXES = ['自己理解度', '感情理解度', '課題認識度', '原因�
 const initScores = () => Object.fromEntries(AXES.map(k => [k, 3])) as Record<string, number>
 
 function ScoreRadar({ scores }: { scores: Record<string, number> }) {
-  const cx = 100, cy = 100, maxR = 72, labelR = 88
+  const cx = 130, cy = 130, maxR = 96, labelR = 116
   const n = AXES.length
   const angle = (i: number) => (i * 2 * Math.PI / n) - Math.PI / 2
   const pt = (r: number, i: number) => ({ x: cx + r * Math.cos(angle(i)), y: cy + r * Math.sin(angle(i)) })
@@ -18,29 +18,55 @@ function ScoreRadar({ scores }: { scores: Record<string, number> }) {
     return `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
   }).join(' ') + 'Z'
   return (
-    <svg width={200} height={200} viewBox="0 0 200 200" style={{ overflow: 'visible', flexShrink: 0 }}>
+    <svg width={260} height={260} viewBox="0 0 260 260" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
       {[1,2,3,4,5].map(lv => {
         const pts = AXES.map((_, i) => { const p = pt((lv/5)*maxR, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
-        return <polygon key={lv} points={pts} fill="none" stroke={lv===5?'#e0d8ce':'#ece8e0'} strokeWidth={lv===5?1.5:0.8} />
+        return <polygon key={lv} points={pts} fill="none" stroke={lv===5?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)'} strokeWidth={lv===5?1.5:0.8} />
       })}
-      {AXES.map((_, i) => { const p = pt(maxR, i); return <line key={i} x1={cx} y1={cy} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} stroke="#ece8e0" strokeWidth="1" /> })}
-      <path d={dataPath} fill="var(--primary)" fillOpacity="0.18" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" />
-      {AXES.map((k, i) => { const r = (scores[k]/5)*maxR; const p = pt(r, i); return <circle key={i} cx={p.x} cy={p.y} r={4} fill="var(--primary)" stroke="#fff" strokeWidth="1.5" /> })}
+      {AXES.map((_, i) => { const p = pt(maxR, i); return <line key={i} x1={cx} y1={cy} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} stroke="rgba(255,255,255,0.1)" strokeWidth="1" /> })}
+      <path d={dataPath} fill="var(--primary)" fillOpacity="0.2" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" />
+      {AXES.map((k, i) => { const r = (scores[k]/5)*maxR; const p = pt(r, i); return <circle key={i} cx={p.x} cy={p.y} r={5} fill="var(--primary)" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" /> })}
       {AXES.map((k, i) => {
         const p = pt(labelR, i)
         const short = k.replace('度', '')
-        return <text key={i} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill="#8a7060">{short}</text>
+        return <text key={i} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="rgba(255,255,255,0.5)">{short}</text>
       })}
     </svg>
   )
 }
 
-const inp: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)', fontSize: 14, fontFamily: 'inherit', background: 'var(--bg3)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }
-const addBtn: React.CSSProperties = { fontSize: 12, padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--primary)', fontFamily: 'inherit', marginTop: 4 }
-const delBtn: React.CSSProperties = { fontSize: 11, padding: '4px 8px', borderRadius: 6, border: '1px solid #fecaca', background: 'transparent', cursor: 'pointer', color: '#e11d48', fontFamily: 'inherit', flexShrink: 0 }
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)', letterSpacing: '0.5px' }}>{children}</div>
-)
+const inp: React.CSSProperties = {
+  width: '100%', padding: '10px 12px', borderRadius: 8,
+  border: '1px solid var(--border)', fontSize: 14, fontFamily: 'inherit',
+  background: 'rgba(255,255,255,0.05)', color: 'var(--text)', outline: 'none',
+  boxSizing: 'border-box', transition: 'border-color 0.15s',
+}
+const addBtn: React.CSSProperties = {
+  fontSize: 12, padding: '6px 14px', borderRadius: 20,
+  border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
+  cursor: 'pointer', color: 'var(--primary)', fontFamily: 'inherit', marginTop: 4,
+}
+const delBtn: React.CSSProperties = {
+  fontSize: 11, padding: '4px 8px', borderRadius: 6,
+  border: '1px solid rgba(225,29,72,0.4)', background: 'transparent',
+  cursor: 'pointer', color: '#f87171', fontFamily: 'inherit', flexShrink: 0,
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 5, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{children}</div>
+}
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid rgba(255,255,255,0.07)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{title}</div>
+      {children}
+    </div>
+  )
+}
+const card: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 14, padding: 20,
+}
 
 export default function AdminPage() {
   const { isAuthenticated } = useStore()
@@ -99,136 +125,177 @@ export default function AdminPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
+  const canSave = !!clientCode.trim() && !!theme.trim()
+
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px 80px' }}>
-      <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 2 }}>レポート作成</div>
-      <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 24 }}>Clarity 自己分析レポート</div>
-
-      {/* 作成済みレポート */}
-      {reports.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--text-sub)' }}>作成済み（{reports.length}件）</div>
-          {reports.map(r => (
-            <div key={r.id} style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--bg3)', border: '1px solid var(--border)', marginBottom: 6 }}>
-              <div style={{ fontSize: 13, fontWeight: 700 }}>{r.client_code} — {r.theme}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>{r.session_date}</div>
-            </div>
-          ))}
+    <div>
+      {/* ページヘッダー */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 28 }}>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>レポート作成</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Clarity 自己分析レポート</div>
         </div>
-      )}
-
-      <div className="card" style={{ padding: 20 }}>
-        {/* 基本情報 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>基本情報</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 5 }}>会員の招待コード *</div>
-              <input style={inp} value={clientCode} onChange={e => setClientCode(e.target.value)} placeholder="CLARITY-AYAKA" />
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 5 }}>セッション日</div>
-              <input type="date" style={inp} value={sessionDate} onChange={e => setSessionDate(e.target.value)} />
-            </div>
-          </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 5 }}>テーマ *</div>
-          <input style={inp} value={theme} onChange={e => setTheme(e.target.value)} placeholder="恋愛・自己価値・本音との向き合い方" />
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {error && <div style={{ fontSize: 13, color: '#f87171' }}>{error}</div>}
+          {saved && <div style={{ fontSize: 13, color: '#4ade80', fontWeight: 600 }}>✓ 保存しました</div>}
+          <button
+            onClick={handleSave}
+            disabled={saving || !canSave}
+            style={{
+              padding: '10px 28px', borderRadius: 24, background: canSave ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+              color: canSave ? '#fff' : 'rgba(255,255,255,0.3)', border: 'none', cursor: canSave ? 'pointer' : 'not-allowed',
+              fontWeight: 700, fontSize: 14, fontFamily: 'inherit', transition: 'all 0.15s',
+            }}
+          >
+            {saving ? '保存中...' : 'レポートを保存する'}
+          </button>
         </div>
+      </div>
 
-        {/* 現在の状態 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>現在の状態</SectionTitle>
-          <textarea style={{ ...inp, minHeight: 120, resize: 'vertical' }} value={currentState} onChange={e => setCurrentState(e.target.value)} placeholder="現在の状態を入力..." />
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', margin: '12px 0 5px' }}>◆ 核となるテーマ</div>
-          <input style={inp} value={coreTheme} onChange={e => setCoreTheme(e.target.value)} placeholder="「明るい自分」で愛されようとしている" />
-        </div>
+      {/* 2カラムグリッド */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'start' }}>
 
-        {/* 思考パターン */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>思考パターン分析</SectionTitle>
-          {thinkingPatterns.map((p, i) => (
-            <div key={i} style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: 'var(--bg3)' }}>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-                <input style={{ ...inp, flex: 1 }} value={p.title} onChange={e => { const n = [...thinkingPatterns]; n[i] = { ...n[i], title: e.target.value }; setThinkingPatterns(n) }} placeholder={`パターン${i+1} タイトル`} />
-                {thinkingPatterns.length > 1 && <button style={delBtn} onClick={() => setThinkingPatterns(thinkingPatterns.filter((_, j) => j !== i))}>削除</button>}
+        {/* 左列：メインフォーム */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* 基本情報 */}
+          <div style={card}>
+            <Section title="基本情報">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <Label>会員の招待コード *</Label>
+                  <input style={inp} value={clientCode} onChange={e => setClientCode(e.target.value)} placeholder="CLARITY-AYAKA" />
+                </div>
+                <div>
+                  <Label>セッション日</Label>
+                  <input type="date" style={inp} value={sessionDate} onChange={e => setSessionDate(e.target.value)} />
+                </div>
+                <div>
+                  <Label>テーマ *</Label>
+                  <input style={inp} value={theme} onChange={e => setTheme(e.target.value)} placeholder="恋愛・自己価値" />
+                </div>
               </div>
-              <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={p.description} onChange={e => { const n = [...thinkingPatterns]; n[i] = { ...n[i], description: e.target.value }; setThinkingPatterns(n) }} placeholder="説明..." />
-            </div>
-          ))}
-          <button style={addBtn} onClick={() => setThinkingPatterns([...thinkingPatterns, { title: '', description: '' }])}>＋ パターンを追加</button>
-        </div>
+            </Section>
+          </div>
 
-        {/* 本来の魅力 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>本来の魅力</SectionTitle>
-          {naturalStrengths.map((s, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input style={{ ...inp, flex: 1 }} value={s} onChange={e => { const n = [...naturalStrengths]; n[i] = e.target.value; setNaturalStrengths(n) }} placeholder={`魅力${i+1}（例：素直）`} />
-              {naturalStrengths.length > 1 && <button style={delBtn} onClick={() => setNaturalStrengths(naturalStrengths.filter((_, j) => j !== i))}>削除</button>}
-            </div>
-          ))}
-          <button style={addBtn} onClick={() => setNaturalStrengths([...naturalStrengths, ''])}>＋ 追加</button>
-        </div>
+          {/* 現在の状態 */}
+          <div style={card}>
+            <Section title="現在の状態">
+              <textarea style={{ ...inp, minHeight: 140, resize: 'vertical' }} value={currentState} onChange={e => setCurrentState(e.target.value)} placeholder="現在の状態を詳しく入力..." />
+              <div style={{ marginTop: 12 }}>
+                <Label>◆ 核となるテーマ</Label>
+                <input style={inp} value={coreTheme} onChange={e => setCoreTheme(e.target.value)} placeholder="「明るい自分」で愛されようとしている" />
+              </div>
+            </Section>
+          </div>
 
-        {/* 言葉の変換 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>言葉の変換</SectionTitle>
-          {wordConversions.map((w, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-              <input style={{ ...inp, flex: 1 }} value={w.before} onChange={e => { const n = [...wordConversions]; n[i] = { ...n[i], before: e.target.value }; setWordConversions(n) }} placeholder="現在の言葉" />
-              <span style={{ color: 'var(--primary)', fontWeight: 700, flexShrink: 0 }}>→</span>
-              <input style={{ ...inp, flex: 1 }} value={w.after} onChange={e => { const n = [...wordConversions]; n[i] = { ...n[i], after: e.target.value }; setWordConversions(n) }} placeholder="変換後" />
-              {wordConversions.length > 1 && <button style={delBtn} onClick={() => setWordConversions(wordConversions.filter((_, j) => j !== i))}>削除</button>}
-            </div>
-          ))}
-          <button style={addBtn} onClick={() => setWordConversions([...wordConversions, { before: '', after: '' }])}>＋ 追加</button>
-        </div>
-
-        {/* 今後の課題 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>今後の課題</SectionTitle>
-          {challenges.map((c, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input style={{ ...inp, flex: 1 }} value={c} onChange={e => { const n = [...challenges]; n[i] = e.target.value; setChallenges(n) }} placeholder={`課題${i+1}`} />
-              {challenges.length > 1 && <button style={delBtn} onClick={() => setChallenges(challenges.filter((_, j) => j !== i))}>削除</button>}
-            </div>
-          ))}
-          <button style={addBtn} onClick={() => setChallenges([...challenges, ''])}>＋ 追加</button>
-        </div>
-
-        {/* 総評 */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>総評</SectionTitle>
-          <textarea style={{ ...inp, minHeight: 120, resize: 'vertical' }} value={overall} onChange={e => setOverall(e.target.value)} placeholder="総評を入力..." />
-        </div>
-
-        {/* 8軸スコア */}
-        <div style={{ marginBottom: 24 }}>
-          <SectionTitle>8軸スコア（1〜5）</SectionTitle>
-          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              {AXES.map(axis => (
-                <div key={axis} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-sub)' }}>{axis}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', minWidth: 16, textAlign: 'right' }}>{scores[axis]}</span>
+          {/* 思考パターン */}
+          <div style={card}>
+            <Section title="思考パターン分析">
+              {thinkingPatterns.map((p, i) => (
+                <div key={i} style={{ marginBottom: 12, padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <input style={{ ...inp, flex: 1 }} value={p.title} onChange={e => { const n = [...thinkingPatterns]; n[i] = { ...n[i], title: e.target.value }; setThinkingPatterns(n) }} placeholder={`パターン${i+1} タイトル`} />
+                    {thinkingPatterns.length > 1 && <button type="button" style={delBtn} onClick={() => setThinkingPatterns(thinkingPatterns.filter((_, j) => j !== i))}>削除</button>}
                   </div>
-                  <input type="range" min={1} max={5} step={1} value={scores[axis]}
-                    onChange={e => setScores({ ...scores, [axis]: Number(e.target.value) })}
-                    style={{ width: '100%', accentColor: 'var(--primary)' }} />
+                  <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={p.description} onChange={e => { const n = [...thinkingPatterns]; n[i] = { ...n[i], description: e.target.value }; setThinkingPatterns(n) }} placeholder="説明..." />
                 </div>
               ))}
+              <button type="button" style={addBtn} onClick={() => setThinkingPatterns([...thinkingPatterns, { title: '', description: '' }])}>＋ パターンを追加</button>
+            </Section>
+          </div>
+
+          {/* 2列：本来の魅力 + 今後の課題 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={card}>
+              <Section title="本来の魅力">
+                {naturalStrengths.map((s, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <input style={{ ...inp, flex: 1 }} value={s} onChange={e => { const n = [...naturalStrengths]; n[i] = e.target.value; setNaturalStrengths(n) }} placeholder={`魅力${i+1}`} />
+                    {naturalStrengths.length > 1 && <button type="button" style={delBtn} onClick={() => setNaturalStrengths(naturalStrengths.filter((_, j) => j !== i))}>削除</button>}
+                  </div>
+                ))}
+                <button type="button" style={addBtn} onClick={() => setNaturalStrengths([...naturalStrengths, ''])}>＋ 追加</button>
+              </Section>
             </div>
-            <ScoreRadar scores={scores} />
+            <div style={card}>
+              <Section title="今後の課題">
+                {challenges.map((c, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <input style={{ ...inp, flex: 1 }} value={c} onChange={e => { const n = [...challenges]; n[i] = e.target.value; setChallenges(n) }} placeholder={`課題${i+1}`} />
+                    {challenges.length > 1 && <button type="button" style={delBtn} onClick={() => setChallenges(challenges.filter((_, j) => j !== i))}>削除</button>}
+                  </div>
+                ))}
+                <button type="button" style={addBtn} onClick={() => setChallenges([...challenges, ''])}>＋ 追加</button>
+              </Section>
+            </div>
+          </div>
+
+          {/* 言葉の変換 */}
+          <div style={card}>
+            <Section title="言葉の変換">
+              {wordConversions.map((w, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                  <input style={{ ...inp, flex: 1 }} value={w.before} onChange={e => { const n = [...wordConversions]; n[i] = { ...n[i], before: e.target.value }; setWordConversions(n) }} placeholder="現在の言葉" />
+                  <span style={{ color: 'var(--primary)', fontWeight: 700, flexShrink: 0, fontSize: 18 }}>→</span>
+                  <input style={{ ...inp, flex: 1 }} value={w.after} onChange={e => { const n = [...wordConversions]; n[i] = { ...n[i], after: e.target.value }; setWordConversions(n) }} placeholder="変換後" />
+                  {wordConversions.length > 1 && <button type="button" style={delBtn} onClick={() => setWordConversions(wordConversions.filter((_, j) => j !== i))}>削除</button>}
+                </div>
+              ))}
+              <button type="button" style={addBtn} onClick={() => setWordConversions([...wordConversions, { before: '', after: '' }])}>＋ 追加</button>
+            </Section>
+          </div>
+
+          {/* 総評 */}
+          <div style={card}>
+            <Section title="総評">
+              <textarea style={{ ...inp, minHeight: 160, resize: 'vertical' }} value={overall} onChange={e => setOverall(e.target.value)} placeholder="セッション全体の総評を入力..." />
+            </Section>
           </div>
         </div>
 
-        {error && <div style={{ padding: '10px 14px', borderRadius: 10, background: '#fef2f2', color: '#e11d48', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-        {saved && <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f0fdf4', color: '#16a34a', fontSize: 13, fontWeight: 600, marginBottom: 12 }}>✓ レポートを保存しました</div>}
+        {/* 右列：スコア + 履歴 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 0 }}>
 
-        <button className="btn-pill" onClick={handleSave} disabled={saving || !clientCode || !theme} style={{ opacity: (!clientCode || !theme) ? 0.4 : 1 }}>
-          {saving ? '保存中...' : 'レポートを保存する'}
-        </button>
+          {/* 8軸スコア */}
+          <div style={card}>
+            <Section title="8軸スコア（1〜5）">
+              <ScoreRadar scores={scores} />
+              <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {AXES.map(axis => (
+                  <div key={axis}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{axis}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', minWidth: 16, textAlign: 'right' }}>{scores[axis]}</span>
+                    </div>
+                    <input type="range" min={1} max={5} step={1} value={scores[axis]}
+                      aria-label={axis}
+                      onChange={e => setScores({ ...scores, [axis]: Number(e.target.value) })}
+                      style={{ width: '100%', accentColor: 'var(--primary)', height: 4 }} />
+                  </div>
+                ))}
+              </div>
+            </Section>
+          </div>
+
+          {/* 作成済みレポート */}
+          {reports.length > 0 && (
+            <div style={card}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginBottom: 12, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                作成済み（{reports.length}件）
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto' }}>
+                {reports.map(r => (
+                  <div key={r.id} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{r.client_code}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{r.theme}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{r.session_date}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

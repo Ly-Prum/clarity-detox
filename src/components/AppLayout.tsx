@@ -106,6 +106,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [drawerOpen])
 
   if (pathname === '/login') return <>{children}</>
+  if (pathname.startsWith('/admin')) return <>{children}</>
   if (!isAuthenticated) return null
 
   // ドロワー（スマホ）用サイドバー内容
