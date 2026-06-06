@@ -46,7 +46,7 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#ffffff',
+      background: '#000000',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -58,19 +58,19 @@ export default function LoginPage() {
       <div style={{ marginBottom: 8 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/clarity-logo.png"
+          src="/icon-512.png"
           alt="Clarity inner coach"
-          style={{ width: 160, height: 160, objectFit: 'contain' }}
+          style={{ width: 180, height: 180, objectFit: 'contain', borderRadius: 32 }}
         />
       </div>
 
-      <p style={{ fontSize: 13, color: '#a89a8a', marginBottom: 44, fontWeight: 500, letterSpacing: '0.05em' }}>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 44, fontWeight: 500, letterSpacing: '0.05em' }}>
         インナーコーチングアプリ
       </p>
 
       {/* 招待コード入力 */}
       <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: 340 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: '#5a4a3a', display: 'block', marginBottom: 8, letterSpacing: '0.04em' }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 8, letterSpacing: '0.04em' }}>
           招待コード
         </label>
         <input
@@ -82,16 +82,16 @@ export default function LoginPage() {
           autoCapitalize="characters"
           style={{
             width: '100%', padding: '14px 16px',
-            border: '1.5px solid #e8e0d4',
+            border: '1.5px solid rgba(255,255,255,0.15)',
             borderRadius: 12,
             fontSize: 16, fontFamily: 'inherit', fontWeight: 600,
-            color: '#2d1f0f', background: '#faf8f5',
+            color: '#ffffff', background: 'rgba(255,255,255,0.08)',
             outline: 'none', letterSpacing: '0.08em',
             boxSizing: 'border-box',
             marginBottom: 8,
           }}
         />
-        <p style={{ fontSize: 11, color: '#a89a8a', marginBottom: 20, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.6 }}>
           Yukaさんから受け取った招待コードを入力してください。
         </p>
 
@@ -124,9 +124,9 @@ export default function LoginPage() {
       {/* ゲストとして使う */}
       <div style={{ marginTop: 24, width: '100%', maxWidth: 340 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <div style={{ flex: 1, height: 1, background: '#ece8e0' }} />
-          <span style={{ fontSize: 11, color: '#c4b8a8', whiteSpace: 'nowrap' }}>または</span>
-          <div style={{ flex: 1, height: 1, background: '#ece8e0' }} />
+          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>または</span>
+          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
         </div>
         <button
           type="button"
@@ -134,8 +134,8 @@ export default function LoginPage() {
           style={{
             width: '100%', padding: '13px 0',
             background: 'transparent',
-            color: '#a89a8a', fontSize: 13, fontWeight: 600,
-            border: '1.5px solid #ece8e0', borderRadius: 50,
+            color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 600,
+            border: '1.5px solid rgba(255,255,255,0.2)', borderRadius: 50,
             cursor: 'pointer', fontFamily: 'inherit',
           }}
         >
@@ -143,7 +143,7 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <div style={{ marginTop: 40, fontSize: 11, color: '#d4c8bc', letterSpacing: '0.04em' }}>
+      <div style={{ marginTop: 40, fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.04em' }}>
         Clarity インナーコーチ
       </div>
     </div>
