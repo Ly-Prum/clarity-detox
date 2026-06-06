@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Clarity',
     images: [
       {
-        url: 'https://clarity-detox.vercel.app/clarity-logo-beige.png',
+        url: 'https://clarity-detox.vercel.app/icon-512.png',
         width: 1024,
         height: 1024,
         alt: 'Clarity インナーコーチ',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Clarity',
     description: '自分を知り、前に進む。Clarity インナーコーチングアプリ',
-    images: ['https://clarity-detox.vercel.app/clarity-logo-beige.png'],
+    images: ['https://clarity-detox.vercel.app/icon-512.png'],
   },
 }
 
