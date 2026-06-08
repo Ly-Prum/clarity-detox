@@ -106,23 +106,31 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
   }, [level])
 
   const color = NOISE_COLORS[state] ?? '#7c6aef'
-  const brainTop = 18
-  const brainBottom = 142
+  const brainTop = 14
+  const brainBottom = 146
   const fillY = brainBottom - (display / 100) * (brainBottom - brainTop)
 
+  // 前頭葉・頭頂葉・側頭葉・後頭葉のふくらみを表現した外形
   const outerPath = [
-    'M 80,18',
-    'C 68,15 52,18 40,30',
-    'C 26,36 16,52 15,70',
-    'C 12,86 18,102 30,114',
-    'C 42,126 58,134 72,136',
-    'C 76,140 78,142 80,142',
-    'C 82,142 84,140 88,136',
-    'C 102,134 118,126 130,114',
-    'C 142,102 148,86 145,70',
-    'C 144,52 134,36 120,30',
-    'C 108,18 92,15 80,18 Z',
+    'M 80,14',
+    'C 90,4 114,7 122,20',
+    'C 132,18 142,30 146,44',
+    'C 152,56 152,70 148,82',
+    'C 152,94 146,108 138,118',
+    'C 128,130 114,138 100,142',
+    'C 92,145 86,146 82,146',
+    'C 81,146 80.5,146 80,146',
+    'C 79.5,146 79,146 78,146',
+    'C 74,146 68,145 60,142',
+    'C 46,138 32,130 22,118',
+    'C 14,108 8,94 12,82',
+    'C 8,70 8,56 14,44',
+    'C 18,30 28,18 38,20',
+    'C 46,7 70,4 80,14 Z',
   ].join(' ')
+
+  const fc = 'rgba(0,0,0,0.22)'
+  const fw = 1.15
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
@@ -133,22 +141,66 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
               <path d={outerPath} />
             </clipPath>
           </defs>
-          <path d={outerPath} fill={`${color}15`} />
+
+          <path d={outerPath} fill={`${color}14`} />
           <g clipPath={`url(#${clipId})`}>
             <rect x={0} y={0} width={160} height={160}
               fill={color} opacity={0.72}
               style={{ transform: `translateY(${fillY}px)`, transition: 'transform 1.4s cubic-bezier(0.34,1.56,0.64,1)' }}
             />
           </g>
-          <path d={outerPath} fill="none" stroke={`${color}60`} strokeWidth="2" />
-          <path d="M 80,20 C 77,55 77,105 80,138" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" />
-          <path d="M 36,55 C 44,51 54,56 52,67" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
-          <path d="M 20,84 C 30,80 40,85 38,96" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
-          <path d="M 38,110 C 46,106 56,111 54,120" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
-          <path d="M 124,55 C 116,51 106,56 108,67" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
-          <path d="M 140,84 C 130,80 120,85 122,96" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
-          <path d="M 122,110 C 114,106 104,111 106,120" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1.2" strokeLinecap="round" />
+          <path d={outerPath} fill="none" stroke={`${color}65`} strokeWidth="2" />
+
+          {/* 大脳縦裂（中央の溝） */}
+          <path d="M 80,14 C 78,52 78,102 80,146" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.8" />
+
+          {/* ── 左半球 ひだ（sulci） ── */}
+          {/* 上前頭回 */}
+          <path d="M 52,20 C 58,12 70,10 76,18" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 前頭回 */}
+          <path d="M 30,34 C 40,24 58,22 66,32" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 前頭溝（縦） */}
+          <path d="M 62,16 C 59,28 57,42 60,54" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 上前頭溝 */}
+          <path d="M 16,50 C 28,40 48,38 56,50" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 中心前回（縦） */}
+          <path d="M 44,36 C 41,50 39,64 42,76" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 中心溝 */}
+          <path d="M 11,66 C 24,58 44,56 52,68" fill="none" stroke={fc} strokeWidth={fw + 0.15} strokeLinecap="round" />
+          {/* 中心後回（縦） */}
+          <path d="M 30,54 C 27,68 25,82 28,96" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 頭頂間溝 */}
+          <path d="M 10,82 C 24,74 44,72 52,84" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* シルビウス裂（側頭）*/}
+          <path d="M 20,76 C 30,86 42,94 52,98" fill="none" stroke={fc} strokeWidth={fw + 0.3} strokeLinecap="round" />
+          {/* 上側頭溝 */}
+          <path d="M 11,98 C 24,92 42,90 50,102" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 下側頭溝 */}
+          <path d="M 18,114 C 28,108 46,106 54,116" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 頭頂後頭溝 */}
+          <path d="M 26,128 C 36,121 54,120 62,128" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 後頭側頭溝（縦） */}
+          <path d="M 48,116 C 46,126 46,136 50,142" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 鳥距溝 */}
+          <path d="M 38,132 C 48,128 62,127 68,133" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+
+          {/* ── 右半球 ひだ（左右反転） ── */}
+          <path d="M 108,20 C 102,12 90,10 84,18" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 130,34 C 120,24 102,22 94,32" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 98,16 C 101,28 103,42 100,54" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 144,50 C 132,40 112,38 104,50" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 116,36 C 119,50 121,64 118,76" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 149,66 C 136,58 116,56 108,68" fill="none" stroke={fc} strokeWidth={fw + 0.15} strokeLinecap="round" />
+          <path d="M 130,54 C 133,68 135,82 132,96" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 150,82 C 136,74 116,72 108,84" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 140,76 C 130,86 118,94 108,98" fill="none" stroke={fc} strokeWidth={fw + 0.3} strokeLinecap="round" />
+          <path d="M 149,98 C 136,92 118,90 110,102" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 142,114 C 132,108 114,106 106,116" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 134,128 C 124,121 106,120 98,128" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 112,116 C 114,126 114,136 110,142" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          <path d="M 122,132 C 112,128 98,127 92,133" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
         </svg>
+
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
           <div style={{ fontSize: 46, fontWeight: 800, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.7)', lineHeight: 1 }}>{level}</div>
           <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.85)', fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.5)', marginTop: 4 }}>ノイズ量</div>
