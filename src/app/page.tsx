@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Brain, ChevronRight, Flame, BarChart2, Sparkles } from 'lucide-react'
+import { Brain, ChevronRight, Flame, BarChart2, PenLine } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import type { DetoxSession, BalanceKey } from '@/lib/types'
 
@@ -152,9 +152,9 @@ export default function HomePage() {
             <Brain size={18} /> 最初のデトックスを始める
           </Link>
           {[
-            { icon: <Brain size={22} color="var(--primary)" />, title: '脳内ノイズ分析', desc: 'AIが頭の混雑度を0–100でスキャン' },
-            { icon: <BarChart2 size={22} color="var(--primary)" />, title: 'バランスマップ', desc: '6軸レーダーで思考の偏りを確認' },
-            { icon: <Sparkles size={22} color="var(--primary)" />, title: 'スコア記録', desc: '毎日のスコアをグラフで振り返る' },
+            { icon: <PenLine size={22} color="var(--primary)" />, title: '今日の記録（1分）', desc: '気分と今日の気づきをひとこと記録する' },
+            { icon: <Brain size={22} color="var(--primary)" />, title: '頭の整理（デトックス）', desc: 'AIが思考をスキャンしてスッキリさせる' },
+            { icon: <BarChart2 size={22} color="var(--primary)" />, title: 'コンディションの確認', desc: '毎日のスコアと変化をグラフで振り返る' },
           ].map(({ icon, title, desc }) => (
             <div key={title} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
@@ -229,20 +229,42 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* デトックスボタン */}
-          <div style={{ marginTop: 20 }}>
-            <Link href="/detox" className="btn-pill" style={{ textDecoration: 'none' }}>
-              <Brain size={17} />
-              {todaySession ? 'もう一度デトックスする' : '脳内デトックスを始める'}
-            </Link>
-          </div>
+        </div>
+      </div>
+
+      {/* ── 今日できること（常時表示ガイド） ── */}
+      <div style={{ padding: '14px 16px 4px', maxWidth: 720, margin: '0 auto' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>
+          今日できること
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <Link href="/checkin" style={{ textDecoration: 'none' }}>
+            <div style={{ background: 'var(--card)', borderRadius: 14, border: '1.5px solid var(--border)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 6, transition: 'box-shadow 0.15s' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PenLine size={16} color="var(--primary)" />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>今日の記録</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', lineHeight: 1.5 }}>1分。気分と今日の気づきをメモ</div>
+              <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600, marginTop: 2 }}>始める →</div>
+            </div>
+          </Link>
+          <Link href="/detox" style={{ textDecoration: 'none' }}>
+            <div style={{ background: 'var(--card)', borderRadius: 14, border: '1.5px solid var(--border)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 6, transition: 'box-shadow 0.15s' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Brain size={16} color="var(--primary)" />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>頭の整理</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', lineHeight: 1.5 }}>AIが思考をスッキリさせてくれる</div>
+              <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600, marginTop: 2 }}>始める →</div>
+            </div>
+          </Link>
         </div>
       </div>
 
       {/* タブ */}
       <div className="page-tab-bar">
-        <button className={`page-tab-btn${tab === 'dashboard' ? ' active' : ''}`} onClick={() => setTab('dashboard')}>ダッシュボード</button>
-        <button className={`page-tab-btn${tab === 'balance' ? ' active' : ''}`} onClick={() => setTab('balance')}>バランス</button>
+        <button className={`page-tab-btn${tab === 'dashboard' ? ' active' : ''}`} onClick={() => setTab('dashboard')}>記録</button>
+        <button className={`page-tab-btn${tab === 'balance' ? ' active' : ''}`} onClick={() => setTab('balance')}>分析</button>
       </div>
 
       {/* ── ダッシュボードタブ ── */}

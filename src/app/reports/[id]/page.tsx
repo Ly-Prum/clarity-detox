@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, CheckSquare, Square } from 'lucide-react'
+import { ArrowLeft, CheckSquare, Square, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { ReportRadar, REPORT_AXES } from '@/components/ReportCard'
 import type { ClarityReport } from '@/lib/types'
@@ -12,6 +12,7 @@ export default function ReportDetailPage() {
   const [report, setReport] = useState<ClarityReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [checked, setChecked] = useState<Record<number, boolean>>({})
+  const [lightbox, setLightbox] = useState<number | null>(null)
 
   useEffect(() => {
     supabase.from('reports').select('*').eq('id', id).maybeSingle()
@@ -48,7 +49,48 @@ export default function ReportDetailPage() {
         )}
       </div>
 
+      {/* ライトボックス */}
+      {lightbox !== null && report.images?.length > 0 && (
+        <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <button type="button" title="閉じる" onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 40, height: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={20} color="#fff" />
+          </button>
+          {lightbox > 0 && (
+            <button type="button" title="前の画像" onClick={e => { e.stopPropagation(); setLightbox(l => l! - 1) }} style={{ position: 'absolute', left: 16, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 44, height: 44, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronLeft size={22} color="#fff" />
+            </button>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={report.images[lightbox]} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: '92vw', maxHeight: '88vh', objectFit: 'contain', borderRadius: 8, boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }} />
+          {lightbox < report.images.length - 1 && (
+            <button type="button" title="次の画像" onClick={e => { e.stopPropagation(); setLightbox(l => l! + 1) }} style={{ position: 'absolute', right: 16, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 44, height: 44, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronRight size={22} color="#fff" />
+            </button>
+          )}
+          <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+            {lightbox + 1} / {report.images.length}
+          </div>
+        </div>
+      )}
+
       <div style={{ padding: '0 16px' }}>
+
+        {/* 画像ギャラリー */}
+        {(report.images ?? []).length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '0.5px', marginBottom: 12, textTransform: 'uppercase' }}>分析レポート画像</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+              {report.images.map((url, i) => (
+                <button key={i} type="button" onClick={() => setLightbox(i)} style={{ border: 'none', padding: 0, cursor: 'zoom-in', borderRadius: 12, overflow: 'hidden', background: 'none', aspectRatio: '3/4', display: 'block', width: '100%' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`レポート画像${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.2s' }}
+                    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.03)')}
+                    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 現在の状態 */}
         {report.current_state && (

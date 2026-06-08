@@ -107,6 +107,7 @@ export interface ClarityReport {
   challenges: string[]
   overall: string
   scores: Record<string, number>
+  images: string[]
   created_at: string
   is_read: boolean
 }
