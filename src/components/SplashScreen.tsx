@@ -14,13 +14,13 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: '#c9a87e',
+      background: '#000000',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       gap: 8,
       opacity: phase === 'out' ? 0 : 1,
       transition: phase === 'out' ? 'opacity 0.5s ease' : 'none',
     }}>
-      {/* Clarity ロゴ（ベージュ背景版） */}
+      {/* Clarity ロゴ */}
       <div style={{
         opacity: phase === 'in' ? 0 : 1,
         transform: phase === 'in' ? 'scale(0.85)' : 'scale(1)',
@@ -28,7 +28,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
       }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/clarity-logo-beige.png"
+          src="/clarity-logo.png"
           alt="Clarity"
           style={{ width: 220, height: 220, objectFit: 'contain' }}
         />
@@ -43,7 +43,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
         {[0, 1, 2].map(i => (
           <div key={i} style={{
             width: 7, height: 7, borderRadius: '50%',
-            background: 'rgba(60,45,30,0.4)',
+            background: 'rgba(255,255,255,0.5)',
             animation: `dot 1s ${i * 0.15}s ease-in-out infinite`,
           }} />
         ))}
