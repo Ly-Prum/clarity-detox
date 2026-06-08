@@ -86,9 +86,9 @@ export default function SettingsPage() {
       {/* ユーザー情報 */}
       <div className="card" style={{ padding: '20px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ width: 60, height: 60, borderRadius: 16, overflow: 'hidden', flexShrink: 0, background: '#fff', border: '1px solid var(--border)' }}>
+          <div style={{ width: 60, height: 60, borderRadius: 16, overflow: 'hidden', flexShrink: 0, background: '#000' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/clarity-logo.png" alt="Clarity" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/clarity-logo.png" alt="Clarity" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {editingName ? (

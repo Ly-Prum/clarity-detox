@@ -191,9 +191,9 @@ export default function HomePage() {
               {name && <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>こんにちは、{name}さん</div>}
             </div>
             <Link href="/settings" style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--primary)', opacity: 0.8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/clarity-logo.png" alt="設定" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+                <img src="/clarity-logo.png" alt="設定" style={{ width: 36, height: 36, objectFit: 'cover' }} />
               </div>
             </Link>
           </div>
