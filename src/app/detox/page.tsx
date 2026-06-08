@@ -96,119 +96,171 @@ const DEMO_ANALYSIS: BrainAnalysis = {
 }
 
 function BrainGauge({ level, state }: { level: number; state: string }) {
-  const uid = useId()
+  const uid    = useId()
   const clipId = `bc${uid.replace(/[^a-zA-Z0-9]/g, '')}`
+  const glowId = `bg${uid.replace(/[^a-zA-Z0-9]/g, '')}`
   const [display, setDisplay] = useState(0)
-
   useEffect(() => {
     const t = setTimeout(() => setDisplay(level), 60)
     return () => clearTimeout(t)
   }, [level])
 
   const color = NOISE_COLORS[state] ?? '#7c6aef'
-  const brainTop = 14
-  const brainBottom = 146
-  const fillY = brainBottom - (display / 100) * (brainBottom - brainTop)
+  const act   = display / 100   // 0..1
 
-  // 前頭葉・頭頂葉・側頭葉・後頭葉のふくらみを表現した外形
   const outerPath = [
-    'M 80,14',
-    'C 90,4 114,7 122,20',
-    'C 132,18 142,30 146,44',
-    'C 152,56 152,70 148,82',
-    'C 152,94 146,108 138,118',
-    'C 128,130 114,138 100,142',
-    'C 92,145 86,146 82,146',
-    'C 81,146 80.5,146 80,146',
-    'C 79.5,146 79,146 78,146',
-    'C 74,146 68,145 60,142',
-    'C 46,138 32,130 22,118',
-    'C 14,108 8,94 12,82',
-    'C 8,70 8,56 14,44',
-    'C 18,30 28,18 38,20',
-    'C 46,7 70,4 80,14 Z',
+    'M 80,14', 'C 90,4 114,7 122,20', 'C 132,18 142,30 146,44',
+    'C 152,56 152,70 148,82', 'C 152,94 146,108 138,118',
+    'C 128,130 114,138 100,142', 'C 92,145 86,146 82,146',
+    'C 81,146 80.5,146 80,146', 'C 79.5,146 79,146 78,146',
+    'C 74,146 68,145 60,142', 'C 46,138 32,130 22,118',
+    'C 14,108 8,94 12,82', 'C 8,70 8,56 14,44',
+    'C 18,30 28,18 38,20', 'C 46,7 70,4 80,14 Z',
   ].join(' ')
 
-  const fc = 'rgba(0,0,0,0.22)'
-  const fw = 1.15
+  // ニューロン（ノード）座標
+  const nodes: [number, number][] = [
+    [80,22],[64,26],[96,26],[50,36],[110,36],
+    [35,52],[66,46],[94,46],[125,52],
+    [20,72],[50,64],[74,60],[86,60],[110,64],[140,72],
+    [26,92],[52,84],[76,88],[84,88],[108,84],[134,92],
+    [34,110],[60,104],[78,110],[82,110],[100,104],[126,110],
+    [52,126],[72,128],[88,128],[108,126],
+  ]
+
+  // シナプス接続
+  const edges: [number, number][] = [
+    [0,1],[0,2],[1,3],[2,4],[1,5],[2,8],[3,5],[4,8],
+    [0,6],[0,7],[5,6],[6,10],[7,10],[7,11],[6,11],[7,12],[8,12],[8,13],[8,14],
+    [5,9],[9,15],[9,10],[10,16],[11,16],[11,17],[12,17],[12,18],[13,18],[13,19],[14,19],[14,20],
+    [15,21],[16,22],[17,22],[17,23],[18,23],[18,24],[19,24],[19,25],[20,25],[20,26],
+    [21,27],[22,27],[22,28],[23,28],[24,28],[24,29],[25,29],[25,30],[26,30],
+    [27,28],[28,29],[29,30],
+  ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
       <div style={{ position: 'relative', width: 240, height: 240 }}>
         <svg width={240} height={240} viewBox="0 0 160 160">
           <defs>
-            <clipPath id={clipId}>
-              <path d={outerPath} />
-            </clipPath>
+            <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id={`${glowId}h`} x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="7" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id={clipId}><path d={outerPath}/></clipPath>
           </defs>
 
-          <path d={outerPath} fill={`${color}14`} />
+          {/* 脳内部：深い暗闇 */}
+          <path d={outerPath} fill="#020310"/>
+
+          {/* ─── ニューラルネットワーク（クリップ内） ─── */}
           <g clipPath={`url(#${clipId})`}>
-            <rect x={0} y={0} width={160} height={160}
-              fill={color} opacity={0.72}
-              style={{ transform: `translateY(${fillY}px)`, transition: 'transform 1.4s cubic-bezier(0.34,1.56,0.64,1)' }}
-            />
+
+            {/* シナプス接続ライン + 信号パーティクル */}
+            {edges.map(([a, b], i) => {
+              const [x1, y1] = nodes[a], [x2, y2] = nodes[b]
+              const dur   = 1.2 + (i % 6) * 0.32
+              const delay = (i % 13) * 0.18
+              return (
+                <g key={i}>
+                  {/* 常時表示の薄いベースライン */}
+                  <line x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={color} strokeWidth={0.45}
+                    strokeOpacity={0.08 + act * 0.26}/>
+                  {/* 走る信号（半数のエッジに） */}
+                  {i % 2 === 0 && (
+                    <line x1={x1} y1={y1} x2={x2} y2={y2}
+                      stroke={color} strokeWidth={1.5}
+                      strokeDasharray="3 300"
+                      strokeOpacity={0.5 + act * 0.4}
+                      filter={`url(#${glowId})`}
+                      style={{ animation: `flowN ${dur}s ${delay}s linear infinite` }}/>
+                  )}
+                </g>
+              )
+            })}
+
+            {/* ニューロンノード */}
+            {nodes.map(([x, y], i) => {
+              const tier  = i % 5 === 0 ? 'A' : i % 3 === 0 ? 'B' : 'C'
+              const r     = tier === 'A' ? 2.4 : tier === 'B' ? 1.7 : 1.1
+              const dur   = 1.0 + (i % 7) * 0.28
+              const delay = (i % 11) * 0.17
+              const baseOp = tier === 'A' ? 0.55 : tier === 'B' ? 0.35 : 0.2
+              return (
+                <g key={i} filter={`url(#${glowId})`}>
+                  {/* リップル（Aノードのみ） */}
+                  {tier === 'A' && (
+                    <circle cx={x} cy={y} r={5} fill="none" stroke={color} strokeWidth={0.7}
+                      style={{
+                        transformOrigin: `${x}px ${y}px`,
+                        animation: `rippleN ${dur * 1.9}s ${delay}s ease-out infinite`,
+                        opacity: 0.25 + act * 0.5,
+                      }}/>
+                  )}
+                  {/* コアドット */}
+                  <circle cx={x} cy={y} r={r} fill={color}
+                    style={{
+                      transformOrigin: `${x}px ${y}px`,
+                      animation: `pulseN ${dur}s ${delay}s ease-in-out infinite`,
+                      opacity: baseOp + act * 0.45,
+                    }}/>
+                </g>
+              )
+            })}
           </g>
-          <path d={outerPath} fill="none" stroke={`${color}65`} strokeWidth="2" />
 
-          {/* 大脳縦裂（中央の溝） */}
-          <path d="M 80,14 C 78,52 78,102 80,146" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.8" />
-
-          {/* ── 左半球 ひだ（sulci） ── */}
-          {/* 上前頭回 */}
-          <path d="M 52,20 C 58,12 70,10 76,18" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 前頭回 */}
-          <path d="M 30,34 C 40,24 58,22 66,32" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 前頭溝（縦） */}
-          <path d="M 62,16 C 59,28 57,42 60,54" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 上前頭溝 */}
-          <path d="M 16,50 C 28,40 48,38 56,50" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 中心前回（縦） */}
-          <path d="M 44,36 C 41,50 39,64 42,76" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 中心溝 */}
-          <path d="M 11,66 C 24,58 44,56 52,68" fill="none" stroke={fc} strokeWidth={fw + 0.15} strokeLinecap="round" />
-          {/* 中心後回（縦） */}
-          <path d="M 30,54 C 27,68 25,82 28,96" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 頭頂間溝 */}
-          <path d="M 10,82 C 24,74 44,72 52,84" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* シルビウス裂（側頭）*/}
-          <path d="M 20,76 C 30,86 42,94 52,98" fill="none" stroke={fc} strokeWidth={fw + 0.3} strokeLinecap="round" />
-          {/* 上側頭溝 */}
-          <path d="M 11,98 C 24,92 42,90 50,102" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 下側頭溝 */}
-          <path d="M 18,114 C 28,108 46,106 54,116" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 頭頂後頭溝 */}
-          <path d="M 26,128 C 36,121 54,120 62,128" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 後頭側頭溝（縦） */}
-          <path d="M 48,116 C 46,126 46,136 50,142" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          {/* 鳥距溝 */}
-          <path d="M 38,132 C 48,128 62,127 68,133" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-
-          {/* ── 右半球 ひだ（左右反転） ── */}
-          <path d="M 108,20 C 102,12 90,10 84,18" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 130,34 C 120,24 102,22 94,32" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 98,16 C 101,28 103,42 100,54" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 144,50 C 132,40 112,38 104,50" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 116,36 C 119,50 121,64 118,76" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 149,66 C 136,58 116,56 108,68" fill="none" stroke={fc} strokeWidth={fw + 0.15} strokeLinecap="round" />
-          <path d="M 130,54 C 133,68 135,82 132,96" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 150,82 C 136,74 116,72 108,84" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 140,76 C 130,86 118,94 108,98" fill="none" stroke={fc} strokeWidth={fw + 0.3} strokeLinecap="round" />
-          <path d="M 149,98 C 136,92 118,90 110,102" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 142,114 C 132,108 114,106 106,116" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 134,128 C 124,121 106,120 98,128" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 112,116 C 114,126 114,136 110,142" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
-          <path d="M 122,132 C 112,128 98,127 92,133" fill="none" stroke={fc} strokeWidth={fw} strokeLinecap="round" />
+          {/* 外枠グロー */}
+          <path d={outerPath} fill="none" stroke={color} strokeWidth={1.5}
+            opacity={0.4 + act * 0.4} filter={`url(#${glowId})`}/>
+          <path d={outerPath} fill="none" stroke={color} strokeWidth={6}
+            opacity={0.05 + act * 0.08} filter={`url(#${glowId}h)`}/>
         </svg>
 
+        {/* スコアオーバーレイ */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-          <div style={{ fontSize: 46, fontWeight: 800, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.7)', lineHeight: 1 }}>{level}</div>
-          <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.85)', fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.5)', marginTop: 4 }}>ノイズ量</div>
+          <div style={{
+            fontSize: 48, fontWeight: 800, color: '#fff', lineHeight: 1,
+            textShadow: `0 0 22px ${color}, 0 0 55px ${color}55, 0 2px 8px rgba(0,0,0,0.98)`,
+          }}>
+            {level}
+          </div>
+          <div style={{
+            fontSize: 12, color, fontWeight: 700, marginTop: 6,
+            letterSpacing: '0.1em', textShadow: `0 0 14px ${color}`,
+          }}>
+            ノイズ量
+          </div>
         </div>
       </div>
-      <div style={{ padding: '7px 24px', borderRadius: 24, background: `${color}22`, color, fontSize: 16, fontWeight: 700, border: `1px solid ${color}44`, letterSpacing: '0.5px' }}>
+
+      <div style={{
+        padding: '7px 28px', borderRadius: 24,
+        background: `${color}14`, color, fontSize: 16, fontWeight: 700,
+        border: `1px solid ${color}44`, letterSpacing: '0.5px',
+        boxShadow: `0 0 18px ${color}28`,
+      }}>
         {state}
       </div>
+
+      <style>{`
+        @keyframes flowN {
+          from { stroke-dashoffset: 0;    }
+          to   { stroke-dashoffset: -303; }
+        }
+        @keyframes pulseN {
+          0%, 100% { transform: scale(0.7);  }
+          50%       { transform: scale(1.5);  }
+        }
+        @keyframes rippleN {
+          0%   { transform: scale(1);   opacity: 0.7; }
+          100% { transform: scale(4.5); opacity: 0;   }
+        }
+      `}</style>
     </div>
   )
 }
