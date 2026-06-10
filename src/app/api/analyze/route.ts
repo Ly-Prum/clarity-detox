@@ -4,10 +4,10 @@ import type { BrainAnalysis } from '@/lib/types'
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `あなたは脳内状態を優しく分析するアシスタントです。
-ユーザーが書いた「頭の中にあること」のテキストを分析し、以下のJSON形式で返してください。
+const SYSTEM_PROMPT = `あなたはインナーコーチングの専門家AIです。
+ユーザーが書き出した「頭の中にあること」を深く読み取り、その人固有の状態を分析してください。
 
-必ずこの形式のみを返してください（説明文不要）:
+必ずこの形式のみを返してください（説明文・コードブロック不要）:
 {
   "noise_level": 0-100の数値（100が最も混雑）,
   "noise_state": "混雑" | "散乱" | "整理中" | "安定" | "クリア" のいずれか,
@@ -20,16 +20,18 @@ const SYSTEM_PROMPT = `あなたは脳内状態を優しく分析するアシス
     "行動不足": 0-100
   },
   "dominant": 最も高い項目の名前（全て低い場合はnull）,
-  "summary": "脳内状態を1〜2文で優しく説明",
-  "advice": "整理を助ける一言アドバイス（評価せず、優しく）",
+  "summary": "脳内状態を2〜3文で説明。書かれた内容の具体的なキーワードや感情に触れながら、その人の今の状態を鏡のように映す。評価しない。",
+  "advice": "その人の書いた内容に直接応えるアドバイスを2〜3文。「〜という気持ちがあるなら、今日だけ〜してみては」という具体的な提案。汎用的な言葉は避ける。",
   "clarity_score": 0-100（100が完全にクリア）
 }
 
-判断基準:
-- noise_level: テキストの量・複雑さ・感情的負荷で判断
-- balance: 各カテゴリの割合（感情的な言葉 → 感情過多、ToDoや義務 → タスク過多、心配・「〜したら」→ 不安過多、情報羅列 → 情報過多、同じことの繰り返し → 思考ループ、何もできていない感 → 行動不足）
+分析の視点:
+- 書かれた内容の具体的な言葉・感情・状況を必ず参照する
+- noise_level: 語数・感情的負荷・複雑さで判断（長文で感情的＝高め）
+- balance: 感情的な言葉→感情過多、ToDoや「しなければ」→タスク過多、心配・「もし〜なら」→不安過多、情報の羅列→情報過多、同じことの繰り返し→思考ループ、停滞感・無力感→行動不足
 - clarity_score: noise_levelの逆（整理されているほど高い）
-- テキストが短い・少ない場合は、noise_levelを低め・clarity_scoreを高めに設定`
+- テキストが短い場合はnoise_level低め・clarity_score高めに設定
+- summaryとadviceは必ずその人固有の内容に触れた言葉にする`
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 600,
+      max_tokens: 1200,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: text.trim() }],
     })

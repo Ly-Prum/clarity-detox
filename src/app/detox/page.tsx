@@ -7,61 +7,6 @@ import { Brain, ChevronRight, Flame, BarChart2 } from 'lucide-react'
 import type { BrainAnalysis, BalanceKey, DetoxSession } from '@/lib/types'
 import { useStore } from '@/lib/store'
 
-interface Star { x: number; y: number; r: number; o: number; twinkle: boolean; dur: number; del: number }
-
-function StarField() {
-  const [stars, setStars] = useState<Star[]>([])
-
-  useEffect(() => {
-    // body背景を透明にして fixed z-index:-1 の星を見えるようにする
-    const prev = document.body.style.background
-    document.body.style.background = 'transparent'
-    return () => { document.body.style.background = prev }
-  }, [])
-
-  useEffect(() => {
-    const arr: Star[] = []
-    for (let i = 0; i < 220; i++) {
-      arr.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        r: i < 180 ? 0.4 + Math.random() * 0.8 : 1.0 + Math.random() * 1.4,
-        o: 0.2 + Math.random() * 0.8,
-        twinkle: Math.random() > 0.55,
-        dur: 1.6 + Math.random() * 3.2,
-        del: Math.random() * 6,
-      })
-    }
-    setStars(arr)
-  }, [])
-
-  return (
-    <>
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: -2,
-        background: 'radial-gradient(ellipse 120% 80% at 50% 30%, #05071a 0%, #000005 70%, #000000 100%)',
-        pointerEvents: 'none',
-      }} />
-      <svg
-        style={{ position: 'fixed', inset: 0, zIndex: -1, width: '100vw', height: '100vh', pointerEvents: 'none' }}
-      >
-        {stars.map((s, i) => (
-          <circle
-            key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r}
-            fill="white"
-            style={{ opacity: s.o, ...(s.twinkle ? { animation: `stTw ${s.dur}s ${s.del}s ease-in-out infinite` } : {}) }}
-          />
-        ))}
-      </svg>
-      <style>{`
-        @keyframes stTw {
-          0%, 100% { opacity: 0.04; }
-          50%       { opacity: 1; }
-        }
-      `}</style>
-    </>
-  )
-}
 
 const NOISE_COLORS: Record<string, string> = {
   'クリア':   '#4ade80',
@@ -110,51 +55,69 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
   const color = NOISE_COLORS[state] ?? '#7c6aef'
   const act   = display / 100   // 0..1
 
-  // 二葉が明確に見えるシルエット（大脳縦裂のくぼみ付き）
+  // 脳幹付き・縦溝強調の脳シルエット（お尻に見えない形）
   const outerPath = [
-    'M 80,22',
-    'C 84,14 96,8 106,8',
-    'C 118,6 130,14 136,24',
-    'C 142,30 148,44 150,58',
-    'C 152,68 150,82 148,92',
-    'C 148,102 144,114 138,122',
-    'C 130,132 118,138 106,142',
-    'C 98,145 90,146 84,147',
-    'C 82,148 81,148 80,148',
-    'C 79,148 78,148 76,147',
-    'C 70,146 62,145 54,142',
-    'C 42,138 30,132 22,122',
-    'C 16,114 12,102 12,92',
-    'C 10,82 8,68 10,58',
-    'C 12,44 18,30 24,24',
-    'C 30,14 42,6 54,8',
-    'C 64,6 76,14 80,22 Z',
+    'M 80,20',                         // 上部の縦溝（深め）
+    'C 85,10 103,4 118,6',             // 右半球上部の内斜面
+    'C 132,4 146,16 150,30',           // 右上外側
+    'C 155,44 154,62 150,76',          // 右上側面
+    'C 148,90 142,104 132,114',        // 右下側面
+    'C 120,126 106,132 92,135',        // 右下
+    'C 87,137 84,140 82,146',          // 右→脳幹
+    'C 81,150 80,155 80,155',          // 脳幹先端
+    'C 80,155 79,150 78,146',          // 脳幹左
+    'C 76,140 73,137 68,135',          // 左から脳幹
+    'C 54,132 40,126 28,114',          // 左下
+    'C 18,104 12,90 10,76',            // 左下側面
+    'C 6,62 5,44 10,30',              // 左上側面
+    'C 14,16 28,4 42,6',              // 左上外側
+    'C 57,4 75,10 80,20 Z',           // 左半球上部の内斜面
   ].join(' ')
 
-  // ニューロン（ノード）座標 — 新しいシルエットに合わせて配置
+  // ニューロン（ノード）座標 — 脳幹付きシルエットに合わせて配置
   const nodes: [number, number][] = [
-    [80,36], [62,22],[98,22], [50,38],[110,38],
-    [34,54],[66,46],[94,46],[126,54],
-    [20,74],[50,64],[74,60],[86,60],[110,64],[140,74],
-    [26,92],[52,84],[76,88],[84,88],[108,84],[134,92],
-    [34,110],[60,104],[78,110],[82,110],[100,104],[126,110],
-    [52,126],[72,128],[88,128],[108,126],
+    // 右半球
+    [100,18],[120,14],[140,26],
+    [104,36],[126,38],[148,50],
+    [92,52],[116,54],[140,64],
+    [96,70],[120,74],[146,78],
+    [100,90],[124,94],[142,98],
+    [106,108],[128,112],[138,118],
+    [112,122],[130,126],
+    // 左半球
+    [60,18],[40,14],[20,26],
+    [56,36],[34,38],[12,50],
+    [68,52],[44,54],[20,64],
+    [64,70],[40,74],[14,78],
+    [60,90],[36,94],[18,98],
+    [54,108],[32,112],[22,118],
+    [48,122],[30,126],
   ]
 
-  // シナプス接続
+  // シナプス接続（右半球0-19、左半球20-39）
   const edges: [number, number][] = [
-    [0,1],[0,2],[0,6],[0,7],[1,3],[2,4],[1,6],[2,7],[3,5],[4,8],[1,5],[2,8],
-    [5,9],[5,6],[6,10],[7,10],[7,11],[6,11],[7,12],[8,12],[8,13],[8,14],[3,6],[4,7],
-    [9,15],[9,10],[10,16],[11,16],[11,17],[12,17],[12,18],[13,18],[13,19],[14,19],[14,20],
-    [15,21],[16,22],[17,22],[17,23],[18,23],[18,24],[19,24],[19,25],[20,25],[20,26],
-    [21,27],[22,27],[22,28],[23,28],[24,28],[24,29],[25,29],[25,30],[26,30],
-    [27,28],[28,29],[29,30],
+    // 右半球内
+    [0,1],[1,2],[0,3],[1,3],[1,4],[2,4],[2,5],
+    [3,6],[4,6],[4,7],[5,7],[5,8],
+    [6,9],[7,9],[7,10],[8,10],[8,11],
+    [9,12],[10,12],[10,13],[11,13],[11,14],
+    [12,15],[13,15],[13,16],[14,16],[14,17],
+    [15,18],[16,18],[16,19],[17,19],
+    [18,19],
+    // 左半球内
+    [20,21],[21,22],[20,23],[21,23],[21,24],[22,24],[22,25],
+    [23,26],[24,26],[24,27],[25,27],[25,28],
+    [26,29],[27,29],[27,30],[28,30],[28,31],
+    [29,32],[30,32],[30,33],[31,33],[31,34],
+    [32,35],[33,35],[33,36],[34,36],[34,37],
+    [35,38],[36,38],[36,39],[37,39],
+    [38,39],
   ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      <div style={{ position: 'relative', width: 240, height: 240 }}>
-        <svg width={240} height={240} viewBox="0 0 160 160">
+      <div style={{ position: 'relative', width: 240, height: 252 }}>
+        <svg width={240} height={252} viewBox="0 0 160 168">
           <defs>
             <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="2.5" result="blur"/>
@@ -169,6 +132,13 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
 
           {/* 脳内部：深い暗闇 */}
           <path d={outerPath} fill="#020310"/>
+          {/* 大脳縦裂（中央の溝） */}
+          <path d="M 80,20 C 78,36 78,56 80,76 C 82,96 80,112 80,120"
+            fill="none" stroke={color} strokeWidth={2}
+            strokeOpacity={0.15 + act * 0.25} strokeLinecap="round"/>
+          {/* 脳幹 */}
+          <path d="M 76,138 C 74,144 74,150 76,155 L 84,155 C 86,150 86,144 84,138 Z"
+            fill="#020310" stroke={color} strokeWidth={1} strokeOpacity={0.3 + act * 0.3}/>
 
           {/* ─── ニューラルネットワーク（クリップ内） ─── */}
           <g clipPath={`url(#${clipId})`}>
@@ -235,7 +205,7 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
         </svg>
 
         {/* スコアオーバーレイ */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
           <div style={{
             fontSize: 48, fontWeight: 800, color: '#fff', lineHeight: 1,
             textShadow: `0 0 22px ${color}, 0 0 55px ${color}55, 0 2px 8px rgba(0,0,0,0.98)`,
@@ -369,54 +339,6 @@ function BalanceMap({ balance, dominant, isDark }: { balance: Record<BalanceKey,
   )
 }
 
-function MoonOrb() {
-  return (
-    <div style={{
-      width: 220, height: 220, flexShrink: 0,
-      animation: 'breathe 4s ease-in-out infinite',
-      filter: 'drop-shadow(0 0 20px rgba(253,224,71,0.45)) drop-shadow(0 0 44px rgba(253,224,71,0.18))',
-    }}>
-      <svg width={220} height={220} viewBox="0 0 220 220" style={{ display: 'block' }}>
-        <defs>
-          <radialGradient id="moonBase" cx="38%" cy="30%" r="68%">
-            <stop offset="0%"   stopColor="#fffef5" />
-            <stop offset="45%"  stopColor="#fef9c3" />
-            <stop offset="100%" stopColor="#d4c87a" />
-          </radialGradient>
-        </defs>
-
-        {/* 月のベース（クリーン・中身なし） */}
-        <circle cx="110" cy="110" r="80" fill="url(#moonBase)" />
-        {/* 左上の光沢ハイライト */}
-        <ellipse cx="88" cy="88" rx="24" ry="15" fill="rgba(255,255,255,0.22)" />
-        {/* アウトライン */}
-        <circle cx="110" cy="110" r="80" fill="none" stroke="rgba(253,224,71,0.2)" strokeWidth="1.5" />
-
-        {/* ✦ キラキラ星（周囲に7個） */}
-        <path d="M110,10 L111.5,14.8 L116,16 L111.5,17.2 L110,22 L108.5,17.2 L104,16 L108.5,14.8Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 0s ease-in-out infinite', transformOrigin: '110px 16px' }} />
-        <path d="M187,44 L188,46.8 L191,48 L188,49.2 L187,52 L186,49.2 L183,48 L186,46.8Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 0.5s ease-in-out infinite', transformOrigin: '187px 48px' }} />
-        <path d="M207,108 L208.4,111.6 L212,112 L208.4,113.4 L207,117 L205.6,113.4 L202,112 L205.6,111.6Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 1s ease-in-out infinite', transformOrigin: '207px 112px' }} />
-        <path d="M185,176 L186,178.8 L189,180 L186,181.2 L185,184 L184,181.2 L181,180 L184,178.8Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 0.3s ease-in-out infinite', transformOrigin: '185px 180px' }} />
-        <path d="M110,196 L111,199.2 L114,200 L111,200.8 L110,204 L109,200.8 L106,200 L109,199.2Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 0.8s ease-in-out infinite', transformOrigin: '110px 200px' }} />
-        <path d="M13,108 L14.4,111.6 L18,112 L14.4,113.4 L13,117 L11.6,113.4 L8,112 L11.6,111.6Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 1.4s ease-in-out infinite', transformOrigin: '13px 112px' }} />
-        <path d="M36,38 L37,40.6 L40,42 L37,43.4 L36,46 L35,43.4 L32,42 L35,40.6Z"
-          fill="#fde68a" style={{ animation: 'twinkle 2.4s 1.8s ease-in-out infinite', transformOrigin: '36px 42px' }} />
-      </svg>
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.12; transform: scale(0.55); }
-          50%       { opacity: 1;    transform: scale(1.2);  }
-        }
-      `}</style>
-    </div>
-  )
-}
 
 // ─── 記録タブ用コンポーネント ──────────────────────────────────────────
 
@@ -497,10 +419,6 @@ export default function DetoxPage() {
   const { addSession, sessions } = useStore()
   const router = useRouter()
   const [hubTab, setHubTab] = useState<'detox' | 'records' | 'analysis'>('detox')
-  const isDark = false
-  const nightCard = isDark
-    ? { background: 'rgba(14,15,26,0.82)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }
-    : {}
   const [text, setText] = useState('')
   const [analysis, setAnalysis] = useState<BrainAnalysis | null>(null)
   const [loading, setLoading] = useState(false)
@@ -560,112 +478,120 @@ export default function DetoxPage() {
     setError('')
   }
 
+  const stateColor = NOISE_COLORS[analysis?.noise_state ?? ''] ?? '#6366f1'
+
   if (analysis) {
     return (
-      <div className="page-wrap detox-wrap" style={{ maxWidth: 1000, margin: '0 auto', position: 'relative' }}>
-        {isDark && <StarField />}
+      <div style={{ background: '#0d0f1a', minHeight: '100vh' }}>
 
-        {/* 結果ヘッダー */}
-        <div className="card fade-up" style={{ padding: '20px 28px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, ...nightCard }}>
-          <div>
-            <div style={{ fontSize: 16, color: 'var(--text-faint)', marginBottom: 4, letterSpacing: '1px', textTransform: 'uppercase' }}>脳内スキャン結果</div>
-            <div style={{ fontSize: 16, color: 'var(--text-sub)' }}>
-              {new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        {/* ── 結果ヘッダー ── */}
+        <div style={{ background: '#0d0f1a', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '28px 20px 20px' }}>
+          <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>Brain Scan Result</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 28, fontWeight: 900, color: stateColor, letterSpacing: '-1px' }}>{analysis.noise_state}</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
+                  {new Date().toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
             </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 16, color: 'var(--text-faint)', marginBottom: 2, letterSpacing: '1px', textTransform: 'uppercase' }}>整理スコア</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: 54, fontWeight: 900, background: 'var(--grad-main)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1 }}>
-                {analysis.clarity_score}
-              </span>
-              <span style={{ fontSize: 18, color: 'var(--text-sub)', fontWeight: 600 }}>/100</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>Clarity Score</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <span style={{ fontSize: 56, fontWeight: 900, color: stateColor, lineHeight: 1, letterSpacing: '-2px' }}>{analysis.clarity_score}</span>
+                <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>/100</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* メイン: 脳ゲージ + カテゴリ */}
-        <div className="card fade-up-2" style={{ padding: 28, marginBottom: 20, ...nightCard }}>
-          <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            <div style={{ flexShrink: 0 }}>
-              <BrainGauge level={analysis.noise_level} state={analysis.noise_state} />
-            </div>
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: '20px 16px 60px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 14, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                脳内カテゴリ分析
+          {/* ── 脳ゲージ + 状態説明 ── */}
+          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '24px 20px' }}>
+            <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <div style={{ flexShrink: 0 }}>
+                <BrainGauge level={analysis.noise_level} state={analysis.noise_state} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-                {(Object.entries(analysis.balance) as [BalanceKey, number][]).map(([key, val]) => {
-                  const color = BALANCE_COLORS[key]
-                  const isMain = key === analysis.dominant
-                  return (
-                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: isMain ? `${color}14` : 'var(--bg3)', border: `1px solid ${isMain ? color + '40' : 'transparent'}` }}>
-                      <div style={{ width: 42, height: 42, borderRadius: '50%', background: isMain ? color : `${color}22`, border: `2px solid ${isMain ? color : color + '44'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: isMain ? '#fff' : color, flexShrink: 0 }}>
-                        {val}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: isMain ? 700 : 500, color: isMain ? 'var(--text)' : 'var(--text-sub)' }}>{key}</div>
-                        {isMain && <div style={{ fontSize: 16, color, fontWeight: 700, marginTop: 2 }}>▶ 主要因</div>}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div style={{ padding: '14px 16px', borderRadius: 12, background: 'var(--bg3)', borderLeft: '3px solid var(--primary)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 8, letterSpacing: '0.5px' }}>今の脳内状態</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14 }}>Status</div>
+                <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 6, marginBottom: 18 }}>
                   {analysis.summary.split('。').filter(Boolean).map((s, i) => (
-                    <p key={i} style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75, margin: 0 }}>{s}。</p>
+                    <p key={i} style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', lineHeight: 1.85, margin: 0 }}>{s}。</p>
                   ))}
+                </div>
+                {/* ノイズバー */}
+                <div style={{ marginBottom: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>NOISE LEVEL</span>
+                    <span style={{ fontSize: 11, color: stateColor, fontWeight: 700 }}>{analysis.noise_level}</span>
+                  </div>
+                  <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 4 }}>
+                    <div style={{ height: '100%', width: `${analysis.noise_level}%`, background: stateColor, borderRadius: 4, transition: 'width 1s ease' }} />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* バランスマップ + アドバイス */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-          <div className="card fade-up-3" style={{ padding: 20, ...nightCard }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 4, letterSpacing: '1px', textTransform: 'uppercase' }}>バランスマップ</div>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-              <BalanceMap balance={analysis.balance} dominant={analysis.dominant} isDark={isDark} />
+          {/* ── カテゴリ内訳 ── */}
+          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 16 }}>Category Breakdown</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(Object.entries(analysis.balance) as [BalanceKey, number][])
+                .sort(([,a],[,b]) => b - a)
+                .map(([key, val]) => {
+                  const color = BALANCE_COLORS[key]
+                  const isMain = key === analysis.dominant
+                  return (
+                    <div key={key}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <span style={{ fontSize: 13, fontWeight: isMain ? 700 : 400, color: isMain ? color : 'rgba(255,255,255,0.5)' }}>{key}</span>
+                          {isMain && <span style={{ fontSize: 9, fontWeight: 800, color, background: `${color}18`, border: `1px solid ${color}30`, borderRadius: 6, padding: '1px 6px', letterSpacing: '0.5px' }}>MAIN</span>}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: isMain ? color : 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
+                      </div>
+                      <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                        <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 3, opacity: isMain ? 1 : 0.5, transition: 'width 1s ease' }} />
+                      </div>
+                    </div>
+                  )
+                })}
             </div>
           </div>
 
-          <div className="card fade-up-4" style={{ padding: 20, ...nightCard }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ fontSize: 20 }}>💡</span>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase' }}>AIアドバイス</div>
+          {/* ── バランスマップ ── */}
+          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>Balance Map</div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <BalanceMap balance={analysis.balance} dominant={analysis.dominant} isDark={true} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          </div>
+
+          {/* ── アドバイス ── */}
+          <div style={{ background: '#161820', border: `1px solid ${stateColor}30`, borderRadius: 16, padding: '20px', borderLeft: `3px solid ${stateColor}` }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: stateColor, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14, opacity: 0.8 }}>AI Advice</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {analysis.advice.split('。').filter(Boolean).map((s, i) => (
-                <p key={i} style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.8, margin: 0 }}>{s}。</p>
+                <p key={i} style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.85, margin: 0 }}>{s}。</p>
               ))}
             </div>
-            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text-faint)' }}>
-              次回のセッションで変化を確認しましょう
-            </div>
+          </div>
+
+          {/* ── ボタン ── */}
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+            <button type="button" onClick={handleReset}
+              style={{ flex: 1, padding: '13px 0', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+              もう一度書く
+            </button>
+            <button type="button" onClick={handleSave}
+              style={{ flex: 2, padding: '13px 0', borderRadius: 10, background: '#4f46e5', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              完了・保存
+            </button>
           </div>
         </div>
-
-        {/* ボタン */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-          <button className="btn-ghost" onClick={handleReset} style={{ flex: 1 }}>もう一度書く</button>
-          <button className="btn-primary" onClick={handleSave} style={{ flex: 2 }}>完了・保存</button>
-        </div>
-
-        <style>{`
-          @keyframes spin { to { transform: rotate(360deg); } }
-          .detox-wrap {
-            --text-faint: ${isDark ? 'rgba(255,255,255,0.52)' : 'var(--text-faint)'};
-            --text-sub:   ${isDark ? 'rgba(255,255,255,0.78)' : 'var(--text-sub)'};
-            --text:       ${isDark ? '#f0f1f8' : 'var(--text)'};
-            --bg3:        ${isDark ? 'rgba(255,255,255,0.07)' : 'var(--bg3)'};
-            --border:     ${isDark ? 'rgba(255,255,255,0.14)' : 'var(--border)'};
-          }
-        `}</style>
       </div>
     )
   }
@@ -682,48 +608,54 @@ export default function DetoxPage() {
 
       {/* ── デトックスタブ ── */}
       {hubTab === 'detox' && (
-        <div style={{
-          minHeight: 'calc(100vh - 48px)',
-          background: 'radial-gradient(ellipse 160% 120% at 50% 0%, #0d1130 0%, #050814 60%, #000008 100%)',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-            {Array.from({ length: 100 }, (_, i) => (
-              <circle key={i} cx={`${(i * 37 + 11) % 100}%`} cy={`${(i * 53 + 7) % 100}%`}
-                r={i % 5 === 0 ? 1.4 : 0.65} fill="white" opacity={0.12 + (i % 7) * 0.11}
-                style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.8}s ${(i % 7) * 0.5}s ease-in-out infinite` } : undefined} />
-            ))}
-          </svg>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '28px 0 14px', position: 'relative' }}>
-            <MoonOrb />
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>脳内デトックス</div>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>今頭の中にあることを、そのまま書き出してください。<br />判断しなくて大丈夫です。</p>
+        <div style={{ minHeight: 'calc(100vh - 48px)', background: '#0d0f1a' }}>
+
+          {/* ヘッダー */}
+          <div style={{ padding: '36px 20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ maxWidth: 600, margin: '0 auto' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 10 }}>Brain Detox</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: '#f0f1f8', letterSpacing: '-0.5px', marginBottom: 8 }}>脳内デトックス</div>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, lineHeight: 1.75, margin: 0 }}>
+                頭の中にあることを、そのまま書き出してください。判断しなくて大丈夫です。
+              </p>
             </div>
           </div>
-          <div className="fade-up" style={{ padding: '0 16px', position: 'relative' }}>
-            <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.12)', padding: 24 }}>
-              <textarea placeholder="今、頭の中にあることを自由に書いてください&#10;&#10;例：明日の会議が心配。タスクが溜まっている気がする。あの件どうなったっけ..."
-                value={text} onChange={e => setText(e.target.value)}
-                style={{ width: '100%', minHeight: 220, fontSize: 15, lineHeight: 1.8, background: 'transparent', border: 'none', outline: 'none', color: '#f0f1f8', fontFamily: 'inherit', resize: 'none' }}
-                autoFocus />
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
-                  {charCount > 0 ? `${charCount}文字` : '20文字以上書くと精度が上がります'}
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button type="button" onClick={handleDemo} style={{ fontSize: 12, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit', padding: '9px 16px', borderRadius: 24, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}>デモを見る</button>
-                  <button type="button" className="btn-grad" onClick={handleAnalyze} disabled={loading || text.trim().length < 5} style={{ opacity: text.trim().length < 5 ? 0.4 : 1, flex: 1, justifyContent: 'center' }}>
+
+          {/* 入力エリア */}
+          <div style={{ padding: '20px 16px 40px', maxWidth: 600, margin: '0 auto' }}>
+            <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+              <textarea
+                placeholder={'今、頭の中にあることを自由に書いてください\n\n例：明日の会議が心配。タスクが溜まっている気がする。あの件どうなったっけ...'}
+                value={text}
+                onChange={e => setText(e.target.value)}
+                style={{ width: '100%', minHeight: 260, fontSize: 15, lineHeight: 1.85, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaf0', fontFamily: 'inherit', resize: 'none', padding: '20px 20px 0', boxSizing: 'border-box' }}
+                autoFocus
+              />
+              <div style={{ padding: '14px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 14 }}>
+                <span style={{ fontSize: 12, color: charCount > 0 ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)', fontVariantNumeric: 'tabular-nums' }}>
+                  {charCount > 0 ? `${charCount} 文字` : '20文字以上で精度が上がります'}
+                </span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={handleDemo}
+                    style={{ fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                    デモ
+                  </button>
+                  <button type="button" onClick={handleAnalyze} disabled={loading || text.trim().length < 5}
+                    style={{ fontSize: 13, fontWeight: 700, cursor: text.trim().length < 5 ? 'not-allowed' : 'pointer', fontFamily: 'inherit', padding: '8px 20px', borderRadius: 8, background: text.trim().length < 5 ? 'rgba(99,102,241,0.2)' : '#4f46e5', border: 'none', color: text.trim().length < 5 ? 'rgba(255,255,255,0.3)' : '#fff', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.15s' }}>
                     {loading
-                      ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />分析中...</span>
-                      : '✦ 脳内を分析する'}
+                      ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'dtSpin 0.8s linear infinite', display: 'inline-block' }} />分析中</>
+                      : <>分析する</>}
                   </button>
                 </div>
               </div>
             </div>
-            {error && <div style={{ marginTop: 12, padding: '12px 18px', borderRadius: 12, background: 'rgba(244,114,182,0.15)', color: '#f9a8d4', fontSize: 13, border: '1px solid rgba(244,114,182,0.2)' }}>{error}</div>}
+            {error && (
+              <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#fca5a5', fontSize: 13, border: '1px solid rgba(239,68,68,0.2)' }}>
+                {error}
+              </div>
+            )}
           </div>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes stTw{0%,100%{opacity:0.04}50%{opacity:0.9}}`}</style>
+          <style>{`@keyframes dtSpin{to{transform:rotate(360deg)}}`}</style>
         </div>
       )}
 
