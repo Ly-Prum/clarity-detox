@@ -77,7 +77,7 @@ export default function AnalysisPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          detoxSessions:       sessions.slice(0, 5).map(s => ({ analysis: s.analysis, input_text: s.input_text })),
+          detoxSessions:       sessions.slice(0, 10).map(s => ({ analysis: s.analysis, input_text: s.input_text })),
           selfAcceptanceNotes: selfNotes.map(n => ({ content: n.content as SelfAcceptanceContent })),
           permissionNotes:     permNotes.map(n => ({ content: n.content as PermissionContent })),
           discoveryAnalysis:   discoverySessions[0]?.analysis ?? null,

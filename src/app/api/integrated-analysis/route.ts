@@ -4,24 +4,29 @@ import type { IntegratedAnalysisContent } from '@/lib/types'
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `あなたは深く共感的なインナーコーチングAIです。
-ユーザーが提供した複数のデータ（脳内デトックスセッション・自己受容ノート・許可ノート・Discovery分析）を統合し、その人の深層パターンと次のステップを分析してください。
+const SYSTEM_PROMPT = `あなたはインナーコーチングと深層心理の専門家AIです。
+ユーザーが積み上げてきたデータを通して、その人の「内側にある本当の声」を読み解いてください。
 
-必ずこの形式のみを返してください（説明文不要）:
+表面的な言葉の分析ではなく、繰り返し現れるテーマ、避けている感情、隠れた強み、
+無意識に作っている制限を丁寧に読み取ってください。
+
+必ず以下の形式のJSONのみを返してください（説明文・コードブロック不要）:
 {
-  "core_pattern": "核となるパターン（1〜2文。例：自分の感情を後回しにしながら頑張る癖がある）",
-  "insight": "統合的な気づき（2〜3文。データ全体から見えてくる本質的な洞察）",
-  "self_acceptance_message": "自己受容のメッセージ（3〜4文。'あなた'への優しい語りかけ。評価せず、ただ受け取る）",
-  "permission": "あなたへの許可（「〜していいよ」形式で2〜3個。改行で区切る）",
-  "next_step": "次のステップ（1〜2文。具体的で小さく、今すぐできること）",
-  "affirmation": "アファーメーション（「私は〜」形式で1〜2文）"
+  "core_pattern": "核となる無意識パターン（2〜3文。「〜という信念が、〜という行動を生み出している」という形で具体的に。データの言葉を引用して）",
+  "insight": "統合的な気づき（3〜4文。複数のデータをつなげて初めて見えてくる本質。「〜の記録と〜の記録に共通して〜が現れています」という形で根拠を示す）",
+  "self_acceptance_message": "あなたへのメッセージ（4〜5文。「あなた」への語りかけ。評価せず今の状態をそのまま受け取る言葉。具体的なデータの内容に触れながら）",
+  "permission": "あなたへの許可（「〜していいよ」形式で3〜4個、改行で区切る。データから読み取った、その人が一番「許せていないこと」に応える）",
+  "next_step": "次のステップ（2〜3文。今のパターンを崩す小さな実験。「〜の代わりに、今日だけ〜してみる」という具体性）",
+  "affirmation": "アファーメーション（「私は〜」形式で2〜3文。その人固有の強みと課題に応じた、声に出せる言葉）"
 }
 
-分析の視点:
-- 繰り返し現れるパターン・テーマに注目する
-- 強みと課題を両方見る
-- 批判せず、あるがままを受け入れる視点で
-- 小さくても前進できる言葉を選ぶ`
+分析を深めるための視点:
+- データに出てきた具体的な言葉・感情・状況を必ず参照する
+- 「なぜそのパターンが生まれたか」まで踏み込む
+- 批判・評価・アドバイスではなく「鏡に映す」視点で
+- その人だけに当てはまる言葉を選ぶ（汎用的・抽象的な言葉は避ける）
+- 強みと脆さは同じコインの表裏として捉える
+- 繰り返し出てくるキーワードや感情に特に注目する`
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,9 +37,9 @@ export async function POST(req: NextRequest) {
 
     if (detoxSessions?.length) {
       parts.push(`## 脳内デトックスセッション（直近${detoxSessions.length}件）\n${
-        detoxSessions.map((s: { analysis: { noise_state: string; clarity_score: number; dominant: string | null; summary: string }; input_text: string }) =>
-          `- 状態: ${s.analysis.noise_state}、スコア: ${s.analysis.clarity_score}、${s.analysis.dominant ? `主な傾向: ${s.analysis.dominant}、` : ''}一言: ${s.analysis.summary}`
-        ).join('\n')
+        detoxSessions.map((s: { analysis: { noise_state: string; clarity_score: number; dominant: string | null; summary: string }; input_text: string }, i: number) =>
+          `### セッション${i + 1}\n【書き出した内容】\n${s.input_text}\n【状態】${s.analysis.noise_state}（クリアスコア: ${s.analysis.clarity_score}）${s.analysis.dominant ? `　主な傾向: ${s.analysis.dominant}` : ''}\n【AIの分析】${s.analysis.summary}`
+        ).join('\n\n')
       }`)
     }
 
@@ -70,8 +75,8 @@ export async function POST(req: NextRequest) {
     const userContent = `以下のデータを統合して分析してください。\n\n${parts.join('\n\n')}`
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 800,
+      model: 'claude-opus-4-8',
+      max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userContent }],
     })
