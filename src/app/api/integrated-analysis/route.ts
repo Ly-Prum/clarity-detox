@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     const userContent = `以下のデータを統合して分析してください。\n\n${parts.join('\n\n')}`
 
     const message = await client.messages.create({
-      model: 'claude-opus-4-8',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userContent }],
