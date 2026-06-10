@@ -1,8 +1,10 @@
 
 'use client'
-import { useState, useEffect, useId } from 'react'
+import { useState, useEffect, useId, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import type { BrainAnalysis, BalanceKey } from '@/lib/types'
+import Link from 'next/link'
+import { Brain, ChevronRight, Flame, BarChart2 } from 'lucide-react'
+import type { BrainAnalysis, BalanceKey, DetoxSession } from '@/lib/types'
 import { useStore } from '@/lib/store'
 
 interface Star { x: number; y: number; r: number; o: number; twinkle: boolean; dur: number; del: number }
@@ -416,9 +418,85 @@ function MoonOrb() {
   )
 }
 
+// ─── 記録タブ用コンポーネント ──────────────────────────────────────────
+
+const NOISE_COLORS_HUB: Record<string, string> = {
+  'クリア': '#16a34a', '安定': '#0891b2', '整理中': '#6366f1',
+  '散乱': '#d97706', '混雑': '#e11d48',
+}
+const DAY_LABELS_HUB = ['日', '月', '火', '水', '木', '金', '土']
+
+function calcStreak(ss: DetoxSession[]) {
+  if (!ss.length) return 0
+  const dates = new Set(ss.map(s => s.created_at.split('T')[0]))
+  let streak = 0
+  const today = new Date()
+  for (let i = 0; i < 366; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i)
+    if (dates.has(d.toISOString().split('T')[0])) streak++
+    else if (streak > 0) break
+  }
+  return streak
+}
+
+function HubScoreRing({ score, noSession }: { score: number; noSession?: boolean }) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setDisplay(score), 150); return () => clearTimeout(t) }, [score])
+  const R = 72, CIRC = 2 * Math.PI * R
+  const offset = CIRC - (display / 100) * CIRC
+  return (
+    <div style={{ position: 'relative', width: 180, height: 180, flexShrink: 0 }}>
+      <svg width={180} height={180} viewBox="0 0 180 180" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+        <circle cx={90} cy={90} r={R} fill="none" stroke="var(--primary-lt)" strokeWidth={12} />
+        <circle cx={90} cy={90} r={R} fill="none" stroke="var(--primary)" strokeWidth={12} strokeLinecap="round"
+          strokeDasharray={CIRC} strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1)' }} />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <Brain size={18} color="var(--primary)" strokeWidth={1.4} style={{ opacity: 0.7 }} />
+        {noSession
+          ? <div style={{ fontSize: 11, color: 'var(--text-faint)', textAlign: 'center', lineHeight: 1.6, marginTop: 4 }}>まだ<br />未記録</div>
+          : <><div style={{ fontSize: 44, fontWeight: 700, color: 'var(--text)', lineHeight: 1, letterSpacing: '-2px' }}>{display}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>/100</div></>
+        }
+      </div>
+    </div>
+  )
+}
+
+function HubWeekBars({ sessions }: { sessions: DetoxSession[] }) {
+  const todayStr = new Date().toISOString().split('T')[0]
+  const bars = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i))
+    const key = d.toISOString().split('T')[0]
+    const s = sessions.find(sx => sx.created_at.startsWith(key))
+    return { label: DAY_LABELS_HUB[d.getDay()], isToday: key === todayStr, session: s }
+  }), [sessions, todayStr])
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 72 }}>
+      {bars.map(({ label, isToday, session }, i) => {
+        const score = session?.analysis.clarity_score ?? 0
+        const h = session ? Math.max(8, (score / 100) * 52) : 4
+        const color = isToday ? 'var(--primary)' : session ? (NOISE_COLORS_HUB[session.analysis.noise_state] ?? 'var(--primary)') : 'var(--bg4)'
+        return (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: '100%', height: 52, display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{ width: '100%', height: h, borderRadius: '5px 5px 2px 2px', background: color, opacity: isToday ? 1 : session ? 0.75 : 1, transition: 'height 0.6s cubic-bezier(0.34,1.56,0.64,1)' }} />
+            </div>
+            <div style={{ fontSize: 10, color: isToday ? 'var(--primary)' : 'var(--text-faint)', fontWeight: isToday ? 700 : 400 }}>{label}</div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function DetoxPage() {
-  const { addSession } = useStore()
+  const { addSession, sessions } = useStore()
   const router = useRouter()
+  const [hubTab, setHubTab] = useState<'detox' | 'records' | 'analysis'>('detox')
   const isDark = false
   const nightCard = isDark
     ? { background: 'rgba(14,15,26,0.82)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }
@@ -428,6 +506,21 @@ export default function DetoxPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const charCount = text.length
+
+  const today = new Date().toISOString().split('T')[0]
+  const todaySession = sessions.find(s => s.created_at.startsWith(today))
+  const streak = useMemo(() => calcStreak(sessions), [sessions])
+  const avgScore = sessions.length
+    ? Math.round(sessions.slice(0, 10).reduce((a, s) => a + s.analysis.clarity_score, 0) / Math.min(sessions.length, 10))
+    : null
+  const avgBalance = useMemo(() => {
+    if (!sessions.length) return null
+    const keys = Object.keys(BALANCE_COLORS) as BalanceKey[]
+    return keys.reduce<Record<BalanceKey, number>>((acc, k) => {
+      acc[k] = Math.round(sessions.reduce((s, sess) => s + (sess.analysis.balance[k] ?? 0), 0) / sessions.length)
+      return acc
+    }, {} as Record<BalanceKey, number>)
+  }, [sessions])
 
   function handleDemo() {
     setAnalysis(DEMO_ANALYSIS)
@@ -578,104 +671,169 @@ export default function DetoxPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse 160% 120% at 50% 0%, #0d1130 0%, #050814 60%, #000008 100%)',
-      position: 'relative', overflow: 'hidden',
-    }}>
-      {/* 星 */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-        {Array.from({ length: 100 }, (_, i) => (
-          <circle key={i}
-            cx={`${(i * 37 + 11) % 100}%`}
-            cy={`${(i * 53 + 7) % 100}%`}
-            r={i % 5 === 0 ? 1.4 : 0.65}
-            fill="white"
-            opacity={0.12 + (i % 7) * 0.11}
-            style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.8}s ${(i % 7) * 0.5}s ease-in-out infinite` } : undefined}
-          />
-        ))}
-      </svg>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
-      {/* 月 */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '32px 0 16px', position: 'relative' }}>
-        <MoonOrb />
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>
-            脳内デトックス
-          </div>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>
-            今頭の中にあることを、そのまま書き出してください。<br />
-            判断しなくて大丈夫です。
-          </p>
-        </div>
+      {/* ── タブバー ── */}
+      <div className="page-tab-bar">
+        <button type="button" className={`page-tab-btn${hubTab === 'detox' ? ' active' : ''}`} onClick={() => setHubTab('detox')}>デトックス</button>
+        <button type="button" className={`page-tab-btn${hubTab === 'records' ? ' active' : ''}`} onClick={() => setHubTab('records')}>記録</button>
+        <button type="button" className={`page-tab-btn${hubTab === 'analysis' ? ' active' : ''}`} onClick={() => setHubTab('analysis')}>分析</button>
       </div>
 
-      {/* 入力カード（グラスモーフィズム） */}
-      <div className="fade-up" style={{ padding: '0 16px', position: 'relative' }}>
+      {/* ── デトックスタブ ── */}
+      {hubTab === 'detox' && (
         <div style={{
-          borderRadius: 20,
-          background: 'rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          padding: 24,
+          minHeight: 'calc(100vh - 48px)',
+          background: 'radial-gradient(ellipse 160% 120% at 50% 0%, #0d1130 0%, #050814 60%, #000008 100%)',
+          position: 'relative', overflow: 'hidden',
         }}>
-          <textarea
-            placeholder="今、頭の中にあることを自由に書いてください&#10;&#10;例：明日の会議が心配。タスクが溜まっている気がする。あの件どうなったっけ..."
-            value={text}
-            onChange={e => setText(e.target.value)}
-            style={{
-              width: '100%', minHeight: 220, fontSize: 15, lineHeight: 1.8,
-              background: 'transparent', border: 'none', outline: 'none',
-              color: '#f0f1f8', fontFamily: 'inherit', resize: 'none',
-            }}
-            autoFocus
-          />
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
-              {charCount > 0 ? `${charCount}文字` : '20文字以上書くと精度が上がります'}
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button
-                onClick={handleDemo}
-                style={{
-                  fontSize: 12, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
-                  padding: '9px 16px', borderRadius: 24,
-                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                  color: 'rgba(255,255,255,0.7)',
-                }}
-              >
-                デモを見る
-              </button>
-              <button
-                className="btn-grad"
-                onClick={handleAnalyze}
-                disabled={loading || text.trim().length < 5}
-                style={{ opacity: text.trim().length < 5 ? 0.4 : 1, flex: 1, justifyContent: 'center' }}
-              >
-                {loading ? (
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
-                    分析中...
-                  </span>
-                ) : '✦ 脳内を分析する'}
-              </button>
+          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            {Array.from({ length: 100 }, (_, i) => (
+              <circle key={i} cx={`${(i * 37 + 11) % 100}%`} cy={`${(i * 53 + 7) % 100}%`}
+                r={i % 5 === 0 ? 1.4 : 0.65} fill="white" opacity={0.12 + (i % 7) * 0.11}
+                style={i % 3 === 0 ? { animation: `stTw ${1.8 + (i % 4) * 0.8}s ${(i % 7) * 0.5}s ease-in-out infinite` } : undefined} />
+            ))}
+          </svg>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '28px 0 14px', position: 'relative' }}>
+            <MoonOrb />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fef9c3', letterSpacing: '-0.3px', marginBottom: 6, textShadow: '0 0 24px rgba(253,224,71,0.5)' }}>脳内デトックス</div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>今頭の中にあることを、そのまま書き出してください。<br />判断しなくて大丈夫です。</p>
             </div>
           </div>
+          <div className="fade-up" style={{ padding: '0 16px', position: 'relative' }}>
+            <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.12)', padding: 24 }}>
+              <textarea placeholder="今、頭の中にあることを自由に書いてください&#10;&#10;例：明日の会議が心配。タスクが溜まっている気がする。あの件どうなったっけ..."
+                value={text} onChange={e => setText(e.target.value)}
+                style={{ width: '100%', minHeight: 220, fontSize: 15, lineHeight: 1.8, background: 'transparent', border: 'none', outline: 'none', color: '#f0f1f8', fontFamily: 'inherit', resize: 'none' }}
+                autoFocus />
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
+                  {charCount > 0 ? `${charCount}文字` : '20文字以上書くと精度が上がります'}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button type="button" onClick={handleDemo} style={{ fontSize: 12, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit', padding: '9px 16px', borderRadius: 24, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}>デモを見る</button>
+                  <button type="button" className="btn-grad" onClick={handleAnalyze} disabled={loading || text.trim().length < 5} style={{ opacity: text.trim().length < 5 ? 0.4 : 1, flex: 1, justifyContent: 'center' }}>
+                    {loading
+                      ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />分析中...</span>
+                      : '✦ 脳内を分析する'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            {error && <div style={{ marginTop: 12, padding: '12px 18px', borderRadius: 12, background: 'rgba(244,114,182,0.15)', color: '#f9a8d4', fontSize: 13, border: '1px solid rgba(244,114,182,0.2)' }}>{error}</div>}
+          </div>
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes stTw{0%,100%{opacity:0.04}50%{opacity:0.9}}`}</style>
         </div>
+      )}
 
-        {error && (
-          <div style={{ marginTop: 12, padding: '12px 18px', borderRadius: 12, background: 'rgba(244,114,182,0.15)', color: '#f9a8d4', fontSize: 13, border: '1px solid rgba(244,114,182,0.2)' }}>
-            {error}
-          </div>
-        )}
-      </div>
+      {/* ── 記録タブ ── */}
+      {hubTab === 'records' && (
+        <div className="page-content" style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+          {sessions.length === 0 ? (
+            <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 14, lineHeight: 2 }}>
+              まだ記録がありません。<br />「デトックス」タブからセッションを始めましょう。
+            </div>
+          ) : (
+            <>
+              {/* コンディションカード */}
+              <div className="card" style={{ padding: '18px' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 16 }}>今日のコンディション</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                  <HubScoreRing score={todaySession?.analysis.clarity_score ?? 0} noSession={!todaySession} />
+                  <div style={{ flex: 1 }}>
+                    {todaySession ? (
+                      <>
+                        <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 20, background: 'var(--primary-lt)', color: 'var(--primary)', fontSize: 13, fontWeight: 600, marginBottom: 10 }}>
+                          {todaySession.analysis.noise_state}
+                        </div>
+                        <p style={{ fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: 12 }}>{todaySession.analysis.summary}</p>
+                      </>
+                    ) : (
+                      <p style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.6, marginBottom: 12 }}>今日はまだ未記録です</p>
+                    )}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--bg3)', padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                        <Flame size={11} color="var(--primary)" />
+                        <span style={{ fontSize: 11, color: 'var(--text-sub)' }}>{streak}日連続</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--bg3)', padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                        <BarChart2 size={11} color="var(--primary)" />
+                        <span style={{ fontSize: 11, color: 'var(--text-sub)' }}>{sessions.length}回</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {todaySession && (
+                  <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 12, background: 'var(--primary-lt)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7 }}>
+                    {todaySession.analysis.advice}
+                  </div>
+                )}
+              </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes stTw { 0%,100% { opacity: 0.04; } 50% { opacity: 0.9; } }
-      `}</style>
+              {/* 週間スコア */}
+              <div className="card" style={{ padding: '18px' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 14 }}>週間スコア</div>
+                <HubWeekBars sessions={sessions} />
+              </div>
+
+              {/* 直近の記録 */}
+              <div className="card" style={{ padding: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>直近の記録</div>
+                  <Link href="/history" style={{ fontSize: 12, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    すべて <ChevronRight size={13} />
+                  </Link>
+                </div>
+                {sessions.slice(0, 3).map((s, i) => {
+                  const c = NOISE_COLORS_HUB[s.analysis.noise_state] ?? '#6366f1'
+                  return (
+                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: `${c}15`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ fontSize: 18, fontWeight: 900, color: c, lineHeight: 1 }}>{s.analysis.clarity_score}</div>
+                        <div style={{ fontSize: 8, color: c, fontWeight: 600 }}>pt</div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', gap: 6, marginBottom: 3 }}>
+                          <span style={{ padding: '2px 10px', borderRadius: 20, background: `${c}15`, color: c, fontSize: 11, fontWeight: 700 }}>{s.analysis.noise_state}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+                          {new Date(s.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+          <div style={{ height: 8 }} />
+        </div>
+      )}
+
+      {/* ── 分析タブ ── */}
+      {hubTab === 'analysis' && (
+        <div className="page-content" style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+          {!avgBalance ? (
+            <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 14, lineHeight: 2 }}>
+              記録を積み重ねると分析が表示されます
+            </div>
+          ) : (
+            <>
+              <div className="card" style={{ padding: '20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>過去10回の平均スコア</div>
+                <div style={{ fontSize: 56, fontWeight: 900, color: 'var(--primary)', lineHeight: 1, letterSpacing: '-2px' }}>{avgScore ?? '--'}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 6 }}>/100</div>
+              </div>
+              <div className="card" style={{ padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>バランスマップ（平均）</div>
+                <BalanceMap balance={avgBalance} dominant={null} isDark={false} />
+              </div>
+            </>
+          )}
+          <div style={{ height: 8 }} />
+        </div>
+      )}
     </div>
   )
 }

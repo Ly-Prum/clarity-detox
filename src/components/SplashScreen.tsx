@@ -28,9 +28,9 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
       }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/clarity-logo.png"
+          src="/clarity-logo-login.png"
           alt="Clarity"
-          style={{ width: 220, height: 220, objectFit: 'contain' }}
+          style={{ width: 220, height: 220, objectFit: 'cover', borderRadius: '50%' }}
         />
       </div>
 

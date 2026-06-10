@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useStore } from '@/lib/store'
-import { supabase } from '@/lib/supabase'
 import { ReportCard } from '@/components/ReportCard'
 import type { ClarityReport } from '@/lib/types'
 
@@ -12,17 +11,16 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (!currentUser) return
-    // 招待コードで紐付け（なければ名前でフォールバック）
-    const lookupCode = currentUser.inviteCode || currentUser.name
-    supabase
-      .from('reports')
-      .select('*')
-      .eq('client_code', lookupCode)
-      .order('session_date', { ascending: false })
-      .then(({ data }) => {
-        if (data) setReports(data as ClarityReport[])
-        setLoading(false)
+    const code = currentUser.inviteCode || currentUser.name
+    fetch(`/api/coach-reports?code=${encodeURIComponent(code)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setReports(data as ClarityReport[])
+          localStorage.setItem('clarity-notif-seen', data[0].id)
+        }
       })
+      .finally(() => setLoading(false))
   }, [currentUser])
 
   return (

@@ -21,12 +21,44 @@ const THEMES = [
   { value: 'other',         label: 'その他',   emoji: '✨' },
 ]
 
-const HIGHLIGHTS = [
-  'うまくいったことがあった',
-  '誰かとのつながりを感じた',
-  '自分と向き合えた',
-  '何か発見・気づきがあった',
-]
+const HIGHLIGHTS: Record<string, string[]> = {
+  work: [
+    '仕事がうまく進んだ',
+    '誰かに感謝できた / された',
+    '難しい決断をした',
+    '新しいアイデアが浮かんだ',
+  ],
+  relationships: [
+    '誰かと深く話せた',
+    '自分の気持ちを伝えられた',
+    '関係が少しよくなった',
+    'ひとりでいたかった',
+  ],
+  romance: [
+    '相手のことをたくさん考えた',
+    '気持ちが少し伝わった',
+    '不安や迷いがあった',
+    '自分の気持ちが整理できた',
+  ],
+  self: [
+    '自分と向き合えた',
+    '新しい気づきがあった',
+    '自分を大切にできた',
+    '迷いの中に答えが見えた',
+  ],
+  health: [
+    '体を動かせた',
+    'よく眠れた',
+    '体の変化に気づいた',
+    '食事や休息を大切にした',
+  ],
+  other: [
+    'うまくいったことがあった',
+    '誰かとのつながりを感じた',
+    '何か発見・気づきがあった',
+    'ただ今日を過ごした',
+  ],
+}
 
 const DAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -51,8 +83,13 @@ export default function CheckInPage() {
 
   const [mood, setMood] = useState<number | null>(null)
   const [theme, setTheme] = useState<string | null>(null)
+  const [themeCustom, setThemeCustom] = useState('')
   const [highlight, setHighlight] = useState<string | null>(null)
+  const [highlightCustom, setHighlightCustom] = useState('')
   const [memo, setMemo] = useState('')
+
+  const effectiveTheme = theme === 'other' && themeCustom.trim() ? themeCustom.trim() : theme
+  const effectiveHighlight = highlight === '__custom__' ? highlightCustom.trim() : highlight
 
   const todayCheckin = checkins.find(c => c.date === today)
 
@@ -71,15 +108,15 @@ export default function CheckInPage() {
   }, [currentUser])
 
   async function handleSave() {
-    if (!mood || !theme || !highlight || !currentUser) return
+    if (!mood || !effectiveTheme || !effectiveHighlight || !currentUser) return
     setSaving(true)
     const checkin: CheckIn = {
       id: crypto.randomUUID(),
       user_id: currentUser.email,
       date: today,
       mood,
-      theme,
-      highlight,
+      theme: effectiveTheme,
+      highlight: effectiveHighlight,
       memo: memo.trim(),
       created_at: new Date().toISOString(),
     }
@@ -88,7 +125,7 @@ export default function CheckInPage() {
     if (!error) {
       setCheckins(prev => [checkin, ...prev.filter(c => c.date !== today)])
       setSaved(true)
-      setMood(null); setTheme(null); setHighlight(null); setMemo('')
+      setMood(null); setTheme(null); setThemeCustom(''); setHighlight(null); setHighlightCustom(''); setMemo('')
     }
   }
 
@@ -107,16 +144,16 @@ export default function CheckInPage() {
     ...t, count: checkins.filter(c => c.theme === t.value).length,
   })).filter(t => t.count > 0).sort((a, b) => b.count - a.count)
 
-  const canSave = !!mood && !!theme && !!highlight
+  const canSave = !!mood && !!effectiveTheme && !!effectiveHighlight
 
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px 80px' }}>
 
       {/* ヘッダー */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Daily</div>
-        <div style={{ fontSize: 22, fontWeight: 900 }}>デイリーチェックイン</div>
-        <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 2 }}>毎日の自分を2分で記録する</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Check-in</div>
+        <div style={{ fontSize: 22, fontWeight: 900 }}>今日の気分メモ</div>
+        <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 2 }}>今日の気分とテーマを選んで記録する</div>
       </div>
 
       {/* 今日の記録 */}
@@ -167,7 +204,7 @@ export default function CheckInPage() {
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 10, letterSpacing: '0.5px', textTransform: 'uppercase' }}>今日のメインテーマ</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {THEMES.map(t => (
-                <button key={t.value} type="button" onClick={() => setTheme(t.value)} style={{
+                <button key={t.value} type="button" onClick={() => { setTheme(t.value); setHighlight(null); setHighlightCustom('') }} style={{
                   padding: '10px 6px', borderRadius: 10,
                   border: `2px solid ${theme === t.value ? 'var(--primary)' : 'var(--border)'}`,
                   background: theme === t.value ? 'var(--primary-lt)' : 'var(--bg3)',
@@ -178,25 +215,60 @@ export default function CheckInPage() {
                 </button>
               ))}
             </div>
+            {/* 「その他」選択時：テーマを自由入力 */}
+            {theme === 'other' && (
+              <input
+                type="text"
+                value={themeCustom}
+                onChange={e => setThemeCustom(e.target.value)}
+                placeholder="テーマを入力（例：勉強、趣味、お金…）"
+                style={{ marginTop: 8, width: '100%', padding: '10px 12px', borderRadius: 10, border: `1.5px solid var(--primary)`, fontSize: 13, fontFamily: 'inherit', background: 'var(--bg3)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+              />
+            )}
           </div>
 
           {/* ハイライト */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 10, letterSpacing: '0.5px', textTransform: 'uppercase' }}>今日いちばん近いのは？</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {HIGHLIGHTS.map(h => (
-                <button key={h} type="button" onClick={() => setHighlight(h)} style={{
-                  padding: '12px 14px', borderRadius: 10,
-                  border: `2px solid ${highlight === h ? 'var(--primary)' : 'var(--border)'}`,
-                  background: highlight === h ? 'var(--primary-lt)' : 'var(--bg3)',
-                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                  fontSize: 13, color: highlight === h ? 'var(--primary)' : 'var(--text)',
-                  fontWeight: highlight === h ? 700 : 400, transition: 'all 0.15s',
-                }}>
-                  {highlight === h ? '✓ ' : ''}{h}
-                </button>
-              ))}
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 10, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              {theme ? '今日いちばん近いのは？' : 'テーマを選ぶと選択肢が表示されます'}
             </div>
+            {theme && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(HIGHLIGHTS[theme] ?? []).map(h => (
+                  <button key={h} type="button" onClick={() => setHighlight(h)} style={{
+                    padding: '12px 14px', borderRadius: 10,
+                    border: `2px solid ${highlight === h ? 'var(--primary)' : 'var(--border)'}`,
+                    background: highlight === h ? 'var(--primary-lt)' : 'var(--bg3)',
+                    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                    fontSize: 13, color: highlight === h ? 'var(--primary)' : 'var(--text)',
+                    fontWeight: highlight === h ? 700 : 400, transition: 'all 0.15s',
+                  }}>
+                    {highlight === h ? '✓ ' : ''}{h}
+                  </button>
+                ))}
+                {/* その他（自由入力）*/}
+                <button type="button" onClick={() => setHighlight('__custom__')} style={{
+                  padding: '12px 14px', borderRadius: 10,
+                  border: `2px solid ${highlight === '__custom__' ? 'var(--primary)' : 'var(--border)'}`,
+                  background: highlight === '__custom__' ? 'var(--primary-lt)' : 'var(--bg3)',
+                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  fontSize: 13, color: highlight === '__custom__' ? 'var(--primary)' : 'var(--text-faint)',
+                  fontWeight: highlight === '__custom__' ? 700 : 400, transition: 'all 0.15s',
+                }}>
+                  {highlight === '__custom__' ? '✓ ' : ''}その他（自分で入力）
+                </button>
+                {highlight === '__custom__' && (
+                  <input
+                    type="text"
+                    value={highlightCustom}
+                    onChange={e => setHighlightCustom(e.target.value)}
+                    placeholder="今日いちばん近かったことを入力…"
+                    autoFocus
+                    style={{ padding: '10px 12px', borderRadius: 10, border: `1.5px solid var(--primary)`, fontSize: 13, fontFamily: 'inherit', background: 'var(--bg3)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           {/* メモ */}

@@ -39,7 +39,7 @@ export default function AnalysisPage() {
   const [loadingMsg, setLoadingMsg] = useState(0)
   const [error, setError] = useState('')
   const [openPastId, setOpenPastId] = useState<string | null>(null)
-  const [explainOpen, setExplainOpen] = useState(false)
+  const [explainOpen, setExplainOpen] = useState(true)
 
   useEffect(() => {
     if (!currentUser) return
@@ -107,9 +107,12 @@ export default function AnalysisPage() {
     <div style={{ maxWidth: 640, margin: '0 auto', padding: '20px 16px 80px' }}>
       {/* ヘッダー */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Step 4</div>
-        <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>統合AI分析</div>
-        <div style={{ fontSize: 13, color: 'var(--text-faint)', lineHeight: 1.7 }}>これまでの記録をAIが統合し、あなたの深層パターンと次へのメッセージを届けます。</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>AI Analysis</div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>あなたの深層分析</div>
+        <div style={{ fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.8 }}>
+          デトックスやノートなど、これまでに記録してきた内容をAIがまとめて読み取り、<br />
+          あなた自身も気づきにくい思考のクセ・強み・次のヒントを届けます。
+        </div>
       </div>
 
       {/* この分析でわかること（開閉式） */}

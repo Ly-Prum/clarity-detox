@@ -2,7 +2,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStore } from '@/lib/store'
-import { LogOut } from 'lucide-react'
+import { LogOut, ChevronRight, Check } from 'lucide-react'
+import { loadDrawers, saveDrawers, drawerBg, DRAWER_ICONS, DRAWER_COLORS, DEFAULT_DRAWERS } from '@/lib/drawerConfig'
+import type { DrawerItem } from '@/lib/drawerConfig'
+import DrawerIcon from '@/components/DrawerIcon'
 
 const COLOR_GROUPS = [
   {
@@ -62,6 +65,25 @@ export default function SettingsPage() {
   const [openColor, setOpenColor]     = useState<string | null>(null)
   const router = useRouter()
 
+  const [drawers, setDrawers] = useState<DrawerItem[]>(() => loadDrawers())
+  const [editIdx, setEditIdx]   = useState<number | null>(null)
+  const [editLabel, setEditLabel]   = useState('')
+  const [editIcon, setEditIcon]     = useState('')
+  const [editColor, setEditColor]   = useState('')
+
+  function startEditDrawer(i: number) {
+    const d = drawers[i]
+    setEditLabel(d.label); setEditIcon(d.icon); setEditColor(d.color)
+    setEditIdx(i)
+  }
+  function saveDrawerEdit() {
+    if (editIdx === null) return
+    const next = drawers.map((d, i) =>
+      i === editIdx ? { ...d, label: editLabel.trim() || d.label, icon: editIcon, color: editColor } : d
+    )
+    setDrawers(next); saveDrawers(next); setEditIdx(null)
+  }
+
   function handleLogout() {
     logout()
     router.replace('/login')
@@ -86,9 +108,9 @@ export default function SettingsPage() {
       {/* ユーザー情報 */}
       <div className="card" style={{ padding: '20px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ width: 60, height: 60, borderRadius: 16, overflow: 'hidden', flexShrink: 0, background: '#000' }}>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#000' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/clarity-logo.png" alt="Clarity" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/clarity-logo.png" alt="Clarity" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {editingName ? (
@@ -206,6 +228,65 @@ export default function SettingsPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* 引き出し設定 */}
+      <div className="card" style={{ overflow: 'hidden' }}>
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>引き出し設定</div>
+            <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>名前・アイコン・色を自由に変更できます</div>
+          </div>
+          <button type="button"
+            onClick={() => { if (confirm('引き出しをデフォルトに戻しますか？')) { saveDrawers(DEFAULT_DRAWERS); setDrawers(DEFAULT_DRAWERS); setEditIdx(null) } }}
+            style={{ fontSize: 11, color: 'var(--text-faint)', background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+            リセット
+          </button>
+        </div>
+        {drawers.map((d, i) => (
+          <div key={d.id} style={{ borderBottom: i < drawers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            {editIdx === i ? (
+              <div style={{ padding: '16px 18px', background: 'var(--bg3)' }}>
+                <input
+                  value={editLabel} onChange={e => setEditLabel(e.target.value)}
+                  placeholder="引き出し名"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 10, border: '1.5px solid var(--primary)', fontSize: 14, fontFamily: 'inherit', background: 'var(--bg)', color: 'var(--text)', outline: 'none', marginBottom: 12 }}
+                />
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 8 }}>アイコン</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                  {DRAWER_ICONS.map(ic => (
+                    <button key={ic.id} type="button" onClick={() => setEditIcon(ic.id)} title={ic.label}
+                      style={{ width: 40, height: 40, borderRadius: 10, border: `2px solid ${editIcon === ic.id ? editColor : 'var(--border)'}`, background: editIcon === ic.id ? drawerBg(editColor) : 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <DrawerIcon name={ic.id} size={18} color={editIcon === ic.id ? editColor : 'var(--text-faint)'} />
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 8 }}>カラー</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {DRAWER_COLORS.map(c => (
+                    <button key={c} type="button" onClick={() => setEditColor(c)}
+                      style={{ width: 30, height: 30, borderRadius: '50%', background: c, border: 'none', cursor: 'pointer', position: 'relative', boxShadow: editColor === c ? `0 0 0 2px #fff, 0 0 0 4px ${c}` : '0 1px 4px rgba(0,0,0,0.15)' }}>
+                      {editColor === c && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={13} color="#fff" strokeWidth={3} /></span>}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                  <button type="button" onClick={() => setEditIdx(null)} style={{ padding: '7px 16px', borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', fontSize: 13, color: 'var(--text-faint)', cursor: 'pointer', fontFamily: 'inherit' }}>キャンセル</button>
+                  <button type="button" onClick={saveDrawerEdit} style={{ padding: '7px 18px', borderRadius: 10, border: 'none', background: 'var(--primary)', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>保存</button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => startEditDrawer(i)}
+                style={{ width: '100%', padding: '12px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: drawerBg(d.color), border: `1.5px solid ${d.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <DrawerIcon name={d.icon} size={17} color={d.color} />
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', flex: 1, textAlign: 'left' }}>{d.label}</span>
+                <ChevronRight size={15} color="var(--text-faint)" />
+              </button>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* データ管理 */}

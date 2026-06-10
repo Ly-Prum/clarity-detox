@@ -504,3 +504,92 @@ textarea.input { resize: none; line-height: 1.75; }
 
 /* テキスト選択色 */
 ::selection { background: var(--primary-lt); color: var(--primary); }
+
+/* ═══════════════════════════════════════
+   HOME PAGE GRID
+═══════════════════════════════════════ */
+.home-bottom-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .home-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+}
+
+/* ═══════════════════════════════════════
+   HOME PAGE ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeUpIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.home-section {
+  animation: fadeUpIn 0.45s ease both;
+}
+.home-section:nth-child(1) { animation-delay: 0.04s; }
+.home-section:nth-child(2) { animation-delay: 0.10s; }
+.home-section:nth-child(3) { animation-delay: 0.17s; }
+.home-section:nth-child(4) { animation-delay: 0.24s; }
+.home-section:nth-child(5) { animation-delay: 0.30s; }
+.home-section:nth-child(6) { animation-delay: 0.36s; }
+
+/* ═══════════════════════════════════════
+   DRAWER CARDS（引き出し）
+═══════════════════════════════════════ */
+.drawer-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.drawer-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+.drawer-card:active {
+  transform: scale(0.94);
+  transition-duration: 0.08s;
+}
+
+/* ═══════════════════════════════════════
+   INTERACTIVE CARDS（タップ感）
+═══════════════════════════════════════ */
+.card-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.10);
+}
+.card-lift:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* ホームヘッダー */
+.home-header {
+  animation: fadeUpIn 0.5s 0.02s ease both;
+}
+
+/* 横スクロール　スクロールバー非表示 */
+.scroll-x-hidden {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x-hidden::-webkit-scrollbar { display: none; }
+
+/* ═══════════════════════════════════════
+   SIDEBAR POLISH
+═══════════════════════════════════════ */
+@media (min-width: 768px) {
+  .sidebar {
+    background: linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--primary-lt) 60%, var(--card)) 100%) !important;
+  }
+}

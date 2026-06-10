@@ -2,32 +2,23 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Brain, History, Home, Settings, Target, FileText, CheckSquare, BookOpen, Sparkles, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Brain, History, Home, Settings, FileText, CheckSquare, BookOpen, Sparkles, Menu, X, ChevronLeft, ChevronRight, Wallet } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import type { DetoxSession, DiscoverySession } from '@/lib/types'
 
 const PERSONAL_NAV = [
   { href: '/',          icon: Home,        label: 'ホーム' },
+  { href: '/kakeibo',   icon: Wallet,      label: '家計簿' },
   { href: '/analysis',  icon: Sparkles,    label: '統合AI分析' },
-  { href: '/checkin',   icon: CheckSquare, label: 'デイリーチェックイン' },
+  { href: '/checkin',   icon: CheckSquare, label: '今日の気分メモ' },
   { href: '/detox',     icon: Brain,       label: '脳内デトックス' },
   { href: '/history',   icon: History,     label: '記録' },
-  { href: '/diagnosis', icon: Target,      label: '診断' },
   { href: '/notes',     icon: BookOpen,    label: 'コーチングノート' },
 ]
 
-const COACH_NAV = [
-  { href: '/reports', icon: FileText, label: '分析レポート' },
-]
+const COACH_NAV: { href: string; icon: React.ElementType; label: string }[] = []
 
-const BOTTOM_NAV = [
-  { href: '/',         icon: Home,        label: 'ホーム' },
-  { href: '/detox',    icon: Brain,       label: 'デトックス' },
-  { href: '/checkin',  icon: CheckSquare, label: '日記' },
-  { href: '/notes',    icon: BookOpen,    label: 'ノート' },
-  { href: '/settings', icon: Settings,    label: '設定' },
-]
 
 function NavLink({
   href, icon: Icon, label, pathname, onClick, collapsed,
@@ -122,13 +113,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // ドロワー（スマホ）用サイドバー内容
   const drawerContent = (
     <>
-      <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28 }}>Clarity</div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, marginBottom: 28 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/clarity-logo.png" alt="Clarity" style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'contain' }} />
+        <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--primary)' }}>Clarity</span>
+        <span style={{ fontSize: 10, color: 'var(--text-faint)', letterSpacing: '0.3px', textAlign: 'center', lineHeight: 1.5 }}>頭の中をスッキリ、毎日をもっと楽に</span>
+      </div>
       <nav style={{ flex: 1 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>個人の記録</div>
         {PERSONAL_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setDrawerOpen(false)} />)}
-        <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0 12px' }} />
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>コーチから</div>
-        {COACH_NAV.map(item => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setDrawerOpen(false)} />)}
       </nav>
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 'auto' }}>
         <NavLink href="/settings" icon={Settings} label="設定" pathname={pathname} onClick={() => setDrawerOpen(false)} />
@@ -147,30 +140,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── PC サイドバー ── */}
       <aside className="sidebar">
-        {/* トグルボタン（常に表示） */}
-        <button
-          type="button"
-          title={c ? 'サイドバーを開く' : 'サイドバーを閉じる'}
-          onClick={() => setSidebarCollapsed(prev => !prev)}
-          style={{
-            alignSelf: c ? 'center' : 'flex-end',
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: c ? '8px 0' : '0 0 16px',
-            color: 'var(--text-faint)',
-            display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
-            marginBottom: c ? 12 : 0,
-          }}
-        >
-          {c
-            ? <ChevronRight size={18} />
-            : <><ChevronLeft size={14} /><span>閉じる</span></>
-          }
-        </button>
-
-        {/* ブランド（展開時のみ） */}
-        {!c && (
-          <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', marginBottom: 28 }}>Clarity</div>
-        )}
+        {/* ブランド＋トグル行 */}
+        <div style={{ marginBottom: c ? 12 : 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: c ? 4 : 8 }}>
+            <button
+              type="button"
+              title={c ? 'サイドバーを開く' : 'サイドバーを閉じる'}
+              onClick={() => setSidebarCollapsed(prev => !prev)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-faint)', display: 'flex', alignItems: 'center' }}
+            >
+              {c ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/clarity-logo.png" alt="Clarity" style={{ width: c ? 52 : 96, height: c ? 52 : 96, borderRadius: '50%', objectFit: 'contain' }} />
+            {!c && <span style={{ fontSize: 19, fontWeight: 900, color: 'var(--primary)' }}>Clarity</span>}
+            {!c && <span style={{ fontSize: 9, color: 'var(--text-faint)', letterSpacing: '0.3px', textAlign: 'center', lineHeight: 1.5 }}>頭の中をスッキリ、毎日をもっと楽に</span>}
+          </div>
+        </div>
 
         {/* 個人ナビ */}
         <nav style={{ flex: 1 }}>
@@ -183,16 +171,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <NavLink key={item.href} {...item} pathname={pathname} collapsed={c} />
           ))}
 
-          <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0 12px' }} />
-
-          {!c && (
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6, padding: '0 4px' }}>
-              コーチから
-            </div>
-          )}
-          {COACH_NAV.map(item => (
-            <NavLink key={item.href} {...item} pathname={pathname} collapsed={c} />
-          ))}
         </nav>
 
         {/* フッター */}
@@ -208,19 +186,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main className="main-content">{children}</main>
-
-      {/* ── スマホ ボトムナビ ── */}
-      <nav className="bottom-nav">
-        {BOTTOM_NAV.map(({ href, icon: Icon, label }) => {
-          const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
-          return (
-            <Link key={href} href={href} className={`bnav-item${active ? ' active' : ''}`}>
-              <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
-              <span>{label}</span>
-            </Link>
-          )
-        })}
-      </nav>
 
       {/* ── スマホ ハンバーガーボタン ── */}
       <button
