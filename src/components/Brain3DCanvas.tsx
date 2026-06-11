@@ -23,7 +23,7 @@ export default function Brain3DCanvas({ color, act }: { color: string; act: numb
     if (!canvas) return
 
     const dpr  = Math.min(window.devicePixelRatio || 1, 2)
-    const SIZE = 228
+    const SIZE = 260
     canvas.width        = SIZE * dpr
     canvas.height       = SIZE * dpr
     canvas.style.width  = `${SIZE}px`

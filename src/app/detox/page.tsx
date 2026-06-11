@@ -90,15 +90,15 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <div style={{ position: 'relative', width: 280, height: 280 }}>
+      <div style={{ position: 'relative', width: 320, height: 320 }}>
         {/* 脳キャンバス — 中央配置 */}
-        <div style={{ position: 'absolute', top: 26, left: 26, width: 228, height: 228 }}>
+        <div style={{ position: 'absolute', top: 30, left: 30, width: 260, height: 260 }}>
           <Brain3DCanvas color={color} act={act} />
         </div>
 
         {/* スコアオーバーレイ（脳の中央） */}
         <div style={{
-          position: 'absolute', top: 26, left: 26, width: 228, height: 228,
+          position: 'absolute', top: 30, left: 30, width: 260, height: 260,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           pointerEvents: 'none',
         }}>
@@ -413,7 +413,7 @@ export default function DetoxPage() {
 
           /* Header */
           .sr-hdr { background: #0d0f1a; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 20px 20px 16px; }
-          .sr-hdr-in { max-width: 800px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+          .sr-hdr-in { max-width: 1100px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
           .sr-section-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 2.5px; text-transform: uppercase; }
           .sr-state-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
           .sr-hdr-time { font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; }
@@ -421,7 +421,7 @@ export default function DetoxPage() {
           .sr-cs-denom { font-size: 13px; color: rgba(255,255,255,0.3); font-weight: 600; }
 
           /* Body */
-          .sr-body { max-width: 800px; margin: 0 auto; padding: 14px 16px 80px; display: flex; flex-direction: column; gap: 10px; }
+          .sr-body { max-width: 1100px; margin: 0 auto; padding: 14px 16px 80px; display: flex; flex-direction: column; gap: 10px; }
 
           /* Cards */
           .sr-card { background: #161820; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px; }
@@ -433,13 +433,6 @@ export default function DetoxPage() {
           .sr-brain-side { flex-shrink: 0; display: flex; justify-content: center; }
           .sr-stat-side { flex: 1; min-width: 200px; }
 
-          /* 段落テキスト共通 */
-          .sr-paras { margin: 0 0 14px; }
-          .sr-paras p { font-size: 12px; line-height: 1.75; margin: 0 0 0.9em; }
-          .sr-paras p:last-child { margin-bottom: 0; }
-          .sr-paras-body { margin: 0 0 14px; }
-          .sr-paras-body p { font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.75; margin: 0 0 0.9em; }
-          .sr-paras-body p:last-child { margin-bottom: 0; }
 
           .sr-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
           .sr-mini-box { background: rgba(255,255,255,0.045); border-radius: 9px; padding: 9px 11px; }
@@ -486,8 +479,6 @@ export default function DetoxPage() {
             .sr-cs-denom { font-size: 15px; }
             .sr-body { padding: 18px 32px 80px; gap: 12px; }
             .sr-card { padding: 20px 24px; border-radius: 16px; }
-            .sr-paras p { font-size: 12.5px; }
-            .sr-paras-body p { font-size: 13.5px; }
             .sr-mini-val { font-size: 22px; }
             .sr-dominant-name { font-size: 14px; }
             .sr-dominant-score { font-size: 20px; }
