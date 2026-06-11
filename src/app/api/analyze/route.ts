@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1200,
+      max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: text.trim() }],
     })
@@ -60,6 +60,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ analysis })
   } catch (err) {
     console.error('Analysis error:', err)
-    return NextResponse.json({ error: '分析中にエラーが発生しました' }, { status: 500 })
+    const msg = err instanceof Error ? err.message : '不明なエラー'
+    const isAuthError = msg.includes('apiKey') || msg.includes('authentication') || msg.includes('API key')
+    return NextResponse.json(
+      { error: isAuthError ? 'APIキーが設定されていません。Vercel環境変数を確認してください。' : '分析中にエラーが発生しました' },
+      { status: 500 }
+    )
   }
 }
