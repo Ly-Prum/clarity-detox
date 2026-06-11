@@ -1,6 +1,6 @@
 
 'use client'
-import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -412,98 +412,100 @@ export default function DetoxPage() {
           .sr-wrap { background: #0d0f1a; min-height: 100vh; }
 
           /* Header */
-          .sr-hdr { background: #0d0f1a; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 22px 20px 18px; }
+          .sr-hdr { background: #0d0f1a; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 20px 20px 16px; }
           .sr-hdr-in { max-width: 800px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-          .sr-section-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 2.5px; text-transform: uppercase; }
-          .sr-state-name { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+          .sr-section-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 2.5px; text-transform: uppercase; }
+          .sr-state-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
           .sr-hdr-time { font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; }
-          .sr-cs-num { font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
-          .sr-cs-denom { font-size: 14px; color: rgba(255,255,255,0.3); font-weight: 600; }
+          .sr-cs-num { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+          .sr-cs-denom { font-size: 13px; color: rgba(255,255,255,0.3); font-weight: 600; }
 
           /* Body */
-          .sr-body { max-width: 800px; margin: 0 auto; padding: 16px 16px 80px; display: flex; flex-direction: column; gap: 12px; }
+          .sr-body { max-width: 800px; margin: 0 auto; padding: 14px 16px 80px; display: flex; flex-direction: column; gap: 10px; }
 
           /* Cards */
-          .sr-card { background: #161820; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 18px 16px; }
-          .sr-card-head { margin-bottom: 14px; }
-          .sr-card-head p { font-size: 11px; color: rgba(255,255,255,0.25); margin: 4px 0 0; line-height: 1.5; }
+          .sr-card { background: #161820; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px; }
+          .sr-card-head { margin-bottom: 12px; }
+          .sr-card-head p { font-size: 10.5px; color: rgba(255,255,255,0.25); margin: 3px 0 0; line-height: 1.5; }
 
           /* Brain row */
-          .sr-brain-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+          .sr-brain-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
           .sr-brain-side { flex-shrink: 0; display: flex; justify-content: center; }
           .sr-stat-side { flex: 1; min-width: 200px; }
-          .sr-state-desc { font-size: 12.5px; line-height: 1.7; margin: 0 0 14px; opacity: 0.92; }
-          .sr-summary { font-size: 13.5px; color: rgba(255,255,255,0.78); line-height: 2.05; margin: 0 0 16px; }
+
+          /* 段落テキスト共通 */
+          .sr-paras { margin: 0 0 14px; }
+          .sr-paras p { font-size: 12px; line-height: 1.8; margin: 0 0 8px; }
+          .sr-paras p:last-child { margin-bottom: 0; }
+          .sr-paras-body { margin: 0 0 14px; }
+          .sr-paras-body p { font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.82; margin: 0 0 8px; }
+          .sr-paras-body p:last-child { margin-bottom: 0; }
+
           .sr-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-          .sr-mini-box { background: rgba(255,255,255,0.045); border-radius: 10px; padding: 10px 12px; }
-          .sr-mini-key { font-size: 9px; color: rgba(255,255,255,0.28); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
-          .sr-mini-val { font-size: 22px; font-weight: 800; line-height: 1; }
-          .sr-mini-sub { font-size: 10px; margin-top: 5px; font-weight: 600; }
-          .sr-dominant { padding: 11px 14px; border-radius: 10px; }
-          .sr-dominant-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0 4px; }
-          .sr-dominant-name { font-size: 15px; font-weight: 700; }
-          .sr-dominant-score { font-size: 22px; font-weight: 800; }
-          .sr-dominant-desc { font-size: 11.5px; color: rgba(255,255,255,0.42); margin: 0; line-height: 1.6; }
+          .sr-mini-box { background: rgba(255,255,255,0.045); border-radius: 9px; padding: 9px 11px; }
+          .sr-mini-key { font-size: 8.5px; color: rgba(255,255,255,0.28); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+          .sr-mini-val { font-size: 20px; font-weight: 800; line-height: 1; }
+          .sr-mini-sub { font-size: 10px; margin-top: 4px; font-weight: 600; }
+          .sr-dominant { padding: 10px 12px; border-radius: 9px; }
+          .sr-dominant-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 4px; }
+          .sr-dominant-name { font-size: 13px; font-weight: 700; }
+          .sr-dominant-score { font-size: 18px; font-weight: 800; }
+          .sr-dominant-desc { font-size: 11px; color: rgba(255,255,255,0.42); margin: 0; line-height: 1.6; }
 
           /* Category grid */
-          .ca-grid { display: flex; flex-direction: column; gap: 10px; }
-          .ca-item { padding: 12px 14px; border-radius: 12px; }
-          .ca-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
-          .ca-item-labels { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-          .ca-item-name { font-size: 13px; }
-          .ca-badge-main { font-size: 9px; font-weight: 800; border-radius: 6px; padding: 2px 7px; }
-          .ca-badge-level { font-size: 9px; font-weight: 700; border-radius: 6px; padding: 2px 7px; }
-          .ca-score { font-size: 18px; font-weight: 800; }
-          .ca-bar-track { height: 5px; border-radius: 3px; margin-bottom: 8px; }
+          .ca-grid { display: flex; flex-direction: column; gap: 8px; }
+          .ca-item { padding: 10px 12px; border-radius: 10px; }
+          .ca-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+          .ca-item-labels { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+          .ca-item-name { font-size: 12px; }
+          .ca-badge-main { font-size: 8.5px; font-weight: 800; border-radius: 5px; padding: 2px 6px; }
+          .ca-badge-level { font-size: 8.5px; font-weight: 700; border-radius: 5px; padding: 2px 6px; }
+          .ca-score { font-size: 16px; font-weight: 800; }
+          .ca-bar-track { height: 4px; border-radius: 3px; margin-bottom: 7px; }
           .ca-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
-          .ca-desc { font-size: 11.5px; margin: 0; line-height: 1.6; color: rgba(255,255,255,0.38); }
+          .ca-desc { font-size: 11px; margin: 0; line-height: 1.65; color: rgba(255,255,255,0.38); }
 
           /* Advice */
-          .sr-advice-intro { font-size: 11.5px; color: rgba(255,255,255,0.3); margin: 4px 0 16px; line-height: 1.6; }
-          .sr-advice-list { display: flex; flex-direction: column; gap: 14px; }
-          .sr-advice-item { display: flex; gap: 13px; align-items: flex-start; }
-          .sr-advice-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 10px; font-weight: 800; }
-          .sr-advice-text { font-size: 14px; color: rgba(255,255,255,0.82); line-height: 1.9; margin: 0; }
+          .sr-advice-intro { font-size: 11px; color: rgba(255,255,255,0.3); margin: 3px 0 14px; line-height: 1.6; }
+          .sr-advice-list { display: flex; flex-direction: column; gap: 12px; }
+          .sr-advice-item { display: flex; gap: 11px; align-items: flex-start; }
+          .sr-advice-num { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 9px; font-weight: 800; }
+          .sr-advice-text { font-size: 12.5px; color: rgba(255,255,255,0.82); line-height: 1.85; margin: 0; }
 
           /* Buttons */
-          .sr-btn-row { display: flex; gap: 10px; padding-top: 6px; }
-          .sr-btn-reset { flex: 1; padding: 13px 0; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-          .sr-btn-save { flex: 2; padding: 13px 0; border-radius: 10px; background: #4f46e5; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+          .sr-btn-row { display: flex; gap: 10px; padding-top: 4px; }
+          .sr-btn-reset { flex: 1; padding: 12px 0; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+          .sr-btn-save { flex: 2; padding: 12px 0; border-radius: 10px; background: #4f46e5; border: none; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
           .sr-btn-save:hover { background: #5b52f5; }
 
-          /* PC breakpoint */
+          /* PC (640px+) */
           @media (min-width: 640px) {
-            .sr-hdr { padding: 28px 32px 22px; }
-            .sr-state-name { font-size: 32px; }
-            .sr-cs-num { font-size: 58px; }
-            .sr-cs-denom { font-size: 17px; }
-            .sr-body { padding: 20px 32px 80px; gap: 16px; }
-            .sr-card { padding: 24px 26px; }
-            /* 段落間隔 */
-            .sr-state-desc { font-size: 13.5px; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-            .sr-summary { font-size: 15px; margin-bottom: 20px; }
-            .sr-mini-val { font-size: 26px; }
-            .sr-mini-sub { font-size: 11px; }
-            .sr-dominant-name { font-size: 16px; }
-            .sr-dominant-score { font-size: 24px; }
-            .sr-dominant-desc { font-size: 12px; }
-            .ca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-            .ca-item-name { font-size: 14px; }
-            .ca-score { font-size: 20px; }
-            .ca-desc { font-size: 12px; line-height: 1.7; }
-            .sr-advice-intro { font-size: 12.5px; margin-bottom: 20px; }
-            .sr-advice-list { gap: 20px; }
-            .sr-advice-item { align-items: flex-start; gap: 16px; }
-            .sr-advice-num { width: 26px; height: 26px; font-size: 11px; margin-top: 2px; }
-            .sr-advice-text { font-size: 15px; line-height: 1.95; }
-            .sr-btn-reset, .sr-btn-save { padding: 15px 0; font-size: 15px; border-radius: 12px; }
+            .sr-hdr { padding: 24px 32px 20px; }
+            .sr-state-name { font-size: 26px; }
+            .sr-cs-num { font-size: 48px; }
+            .sr-cs-denom { font-size: 15px; }
+            .sr-body { padding: 18px 32px 80px; gap: 12px; }
+            .sr-card { padding: 20px 24px; border-radius: 16px; }
+            .sr-paras p { font-size: 12.5px; margin-bottom: 9px; }
+            .sr-paras-body p { font-size: 13.5px; margin-bottom: 9px; }
+            .sr-mini-val { font-size: 22px; }
+            .sr-dominant-name { font-size: 14px; }
+            .sr-dominant-score { font-size: 20px; }
+            .sr-dominant-desc { font-size: 11.5px; }
+            .ca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .ca-item-name { font-size: 12.5px; }
+            .ca-score { font-size: 17px; }
+            .ca-desc { font-size: 11.5px; }
+            .sr-advice-intro { font-size: 11.5px; }
+            .sr-advice-text { font-size: 13.5px; }
+            .sr-btn-reset, .sr-btn-save { font-size: 14px; padding: 13px 0; }
           }
 
           /* Very small phones */
           @media (max-width: 360px) {
             .sr-hdr-in { flex-direction: column; align-items: flex-start; }
             .sr-stat-side { min-width: 100%; }
-            .sr-cs-num { font-size: 38px; }
+            .sr-cs-num { font-size: 34px; }
           }
 
           @keyframes dtSpin { to { transform: rotate(360deg) } }
@@ -542,17 +544,17 @@ export default function DetoxPage() {
               <div className="sr-stat-side">
                 <div className="sr-section-label" style={{ marginBottom: 10 }}>Status</div>
 
-                <p className="sr-state-desc" style={{ color: stateColor }}>
-                  {STATE_DESCRIPTIONS[analysis.noise_state].split('。').filter(Boolean).map((s, i, arr) => (
-                    <Fragment key={i}>{s}。{i < arr.length - 1 && <br />}</Fragment>
+                <div className="sr-paras">
+                  {STATE_DESCRIPTIONS[analysis.noise_state].split('。').filter(Boolean).map((s, i) => (
+                    <p key={i} style={{ color: stateColor, opacity: 0.9 }}>{s}。</p>
                   ))}
-                </p>
+                </div>
 
-                <p className="sr-summary">
-                  {analysis.summary.split('。').filter(Boolean).map((s, i, arr) => (
-                    <Fragment key={i}>{s}。{i < arr.length - 1 && <br />}</Fragment>
+                <div className="sr-paras-body">
+                  {analysis.summary.split('。').filter(Boolean).map((s, i) => (
+                    <p key={i}>{s}。</p>
                   ))}
-                </p>
+                </div>
 
                 <div className="sr-mini-grid">
                   <div className="sr-mini-box">
