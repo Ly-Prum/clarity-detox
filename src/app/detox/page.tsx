@@ -435,10 +435,10 @@ export default function DetoxPage() {
 
           /* 段落テキスト共通 */
           .sr-paras { margin: 0 0 14px; }
-          .sr-paras p { font-size: 12px; line-height: 1.8; margin: 0 0 8px; }
+          .sr-paras p { font-size: 12px; line-height: 1.75; margin: 0 0 0.9em; }
           .sr-paras p:last-child { margin-bottom: 0; }
           .sr-paras-body { margin: 0 0 14px; }
-          .sr-paras-body p { font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.82; margin: 0 0 8px; }
+          .sr-paras-body p { font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.75; margin: 0 0 0.9em; }
           .sr-paras-body p:last-child { margin-bottom: 0; }
 
           .sr-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
@@ -486,8 +486,8 @@ export default function DetoxPage() {
             .sr-cs-denom { font-size: 15px; }
             .sr-body { padding: 18px 32px 80px; gap: 12px; }
             .sr-card { padding: 20px 24px; border-radius: 16px; }
-            .sr-paras p { font-size: 12.5px; margin-bottom: 9px; }
-            .sr-paras-body p { font-size: 13.5px; margin-bottom: 9px; }
+            .sr-paras p { font-size: 12.5px; }
+            .sr-paras-body p { font-size: 13.5px; }
             .sr-mini-val { font-size: 22px; }
             .sr-dominant-name { font-size: 14px; }
             .sr-dominant-score { font-size: 20px; }
