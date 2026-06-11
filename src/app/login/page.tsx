@@ -68,7 +68,7 @@ export default function LoginPage() {
       <div style={{ marginBottom: 8 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/clarity-logo-login.png"
+          src="/clarity-logo.png"
           alt="Clarity inner coach"
           style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: '50%' }}
         />

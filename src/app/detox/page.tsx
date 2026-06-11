@@ -1,11 +1,14 @@
 
 'use client'
-import { useState, useEffect, useId, useMemo } from 'react'
+import { useState, useEffect, useMemo, Fragment } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Brain, ChevronRight, Flame, BarChart2 } from 'lucide-react'
 import type { BrainAnalysis, BalanceKey, DetoxSession } from '@/lib/types'
 import { useStore } from '@/lib/store'
+
+const Brain3DCanvas = dynamic(() => import('@/components/Brain3DCanvas'), { ssr: false })
 
 
 const NOISE_COLORS: Record<string, string> = {
@@ -23,6 +26,39 @@ const BALANCE_COLORS: Record<BalanceKey, string> = {
   '情報過多':   '#2dd4bf',
   '思考ループ': '#a78bfa',
   '行動不足':   '#94a3b8',
+}
+
+const STATE_DESCRIPTIONS: Record<string, string> = {
+  'クリア':   '頭の中が整理されており、集中力・判断力ともに高い状態です。今がいちばん動きやすいタイミング。',
+  '安定':     '思考がまとまっており、落ち着いて物事に取り組める状態です。少し整理するとさらに良くなります。',
+  '整理中':   '情報を処理しようとしているところです。書き出すほど頭が軽くなる状態です。',
+  '散乱':     '複数の思考が混在し、優先度が見えにくくなっています。いちばん気になることを1つだけ選ぶのが有効です。',
+  '混雑':     '情報・感情・タスクが重なり、判断力が落ちやすい状態です。まず頭を空にすることを優先しましょう。',
+}
+
+const BALANCE_DESCRIPTIONS: Record<BalanceKey, string> = {
+  '感情過多':   '感情的な言葉や表現が多く、気持ちが先行しています。感情を「観察」する視点が有効です。',
+  'タスク過多': '「やらなければ」「〜する必要がある」という思考が多く見られます。タスクを書き出して可視化しましょう。',
+  '不安過多':   '未来への心配や「もし〜だったら」という思考パターンが多い。今できることに絞ると楽になります。',
+  '情報過多':   '多くの情報や事実を同時に処理しようとしています。インプットを一時停止するのが効果的です。',
+  '思考ループ': '同じ内容を繰り返し考えるパターンが見られます。思考を外に出す（書く・話す）ことで解消します。',
+  '行動不足':   '停滞感や「動けない」という感覚が見られます。0か100ではなく、1%の小さな一歩が突破口になります。',
+}
+
+function noiseLevelLabel(n: number): { label: string; color: string } {
+  if (n <= 20) return { label: '非常に静か', color: '#4ade80' }
+  if (n <= 40) return { label: '落ち着いている', color: '#2dd4bf' }
+  if (n <= 60) return { label: 'やや混雑', color: '#7c6aef' }
+  if (n <= 75) return { label: 'かなり混雑', color: '#fbbf24' }
+  return { label: '高負荷状態', color: '#f472b6' }
+}
+
+function clarityLabel(n: number): string {
+  if (n >= 80) return '非常にクリア'
+  if (n >= 60) return 'クリア'
+  if (n >= 40) return 'やや濁り'
+  if (n >= 20) return '要整理'
+  return '混濁'
 }
 
 const DEMO_ANALYSIS: BrainAnalysis = {
@@ -43,9 +79,6 @@ const DEMO_ANALYSIS: BrainAnalysis = {
 }
 
 function BrainGauge({ level, state }: { level: number; state: string }) {
-  const uid    = useId()
-  const clipId = `bc${uid.replace(/[^a-zA-Z0-9]/g, '')}`
-  const glowId = `bg${uid.replace(/[^a-zA-Z0-9]/g, '')}`
   const [display, setDisplay] = useState(0)
   useEffect(() => {
     const t = setTimeout(() => setDisplay(level), 60)
@@ -53,288 +86,179 @@ function BrainGauge({ level, state }: { level: number; state: string }) {
   }, [level])
 
   const color = NOISE_COLORS[state] ?? '#7c6aef'
-  const act   = display / 100   // 0..1
-
-  // 脳幹付き・縦溝強調の脳シルエット（お尻に見えない形）
-  const outerPath = [
-    'M 80,20',                         // 上部の縦溝（深め）
-    'C 85,10 103,4 118,6',             // 右半球上部の内斜面
-    'C 132,4 146,16 150,30',           // 右上外側
-    'C 155,44 154,62 150,76',          // 右上側面
-    'C 148,90 142,104 132,114',        // 右下側面
-    'C 120,126 106,132 92,135',        // 右下
-    'C 87,137 84,140 82,146',          // 右→脳幹
-    'C 81,150 80,155 80,155',          // 脳幹先端
-    'C 80,155 79,150 78,146',          // 脳幹左
-    'C 76,140 73,137 68,135',          // 左から脳幹
-    'C 54,132 40,126 28,114',          // 左下
-    'C 18,104 12,90 10,76',            // 左下側面
-    'C 6,62 5,44 10,30',              // 左上側面
-    'C 14,16 28,4 42,6',              // 左上外側
-    'C 57,4 75,10 80,20 Z',           // 左半球上部の内斜面
-  ].join(' ')
-
-  // ニューロン（ノード）座標 — 脳幹付きシルエットに合わせて配置
-  const nodes: [number, number][] = [
-    // 右半球
-    [100,18],[120,14],[140,26],
-    [104,36],[126,38],[148,50],
-    [92,52],[116,54],[140,64],
-    [96,70],[120,74],[146,78],
-    [100,90],[124,94],[142,98],
-    [106,108],[128,112],[138,118],
-    [112,122],[130,126],
-    // 左半球
-    [60,18],[40,14],[20,26],
-    [56,36],[34,38],[12,50],
-    [68,52],[44,54],[20,64],
-    [64,70],[40,74],[14,78],
-    [60,90],[36,94],[18,98],
-    [54,108],[32,112],[22,118],
-    [48,122],[30,126],
-  ]
-
-  // シナプス接続（右半球0-19、左半球20-39）
-  const edges: [number, number][] = [
-    // 右半球内
-    [0,1],[1,2],[0,3],[1,3],[1,4],[2,4],[2,5],
-    [3,6],[4,6],[4,7],[5,7],[5,8],
-    [6,9],[7,9],[7,10],[8,10],[8,11],
-    [9,12],[10,12],[10,13],[11,13],[11,14],
-    [12,15],[13,15],[13,16],[14,16],[14,17],
-    [15,18],[16,18],[16,19],[17,19],
-    [18,19],
-    // 左半球内
-    [20,21],[21,22],[20,23],[21,23],[21,24],[22,24],[22,25],
-    [23,26],[24,26],[24,27],[25,27],[25,28],
-    [26,29],[27,29],[27,30],[28,30],[28,31],
-    [29,32],[30,32],[30,33],[31,33],[31,34],
-    [32,35],[33,35],[33,36],[34,36],[34,37],
-    [35,38],[36,38],[36,39],[37,39],
-    [38,39],
-  ]
+  const act   = display / 100
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      <div style={{ position: 'relative', width: 240, height: 252 }}>
-        <svg width={240} height={252} viewBox="0 0 160 168">
-          <defs>
-            <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id={`${glowId}h`} x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="7" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <clipPath id={clipId}><path d={outerPath}/></clipPath>
-          </defs>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ position: 'relative', width: 280, height: 280 }}>
+        {/* 脳キャンバス — 中央配置 */}
+        <div style={{ position: 'absolute', top: 26, left: 26, width: 228, height: 228 }}>
+          <Brain3DCanvas color={color} act={act} />
+        </div>
 
-          {/* 脳内部：深い暗闇 */}
-          <path d={outerPath} fill="#020310"/>
-          {/* 大脳縦裂（中央の溝） */}
-          <path d="M 80,20 C 78,36 78,56 80,76 C 82,96 80,112 80,120"
-            fill="none" stroke={color} strokeWidth={2}
-            strokeOpacity={0.15 + act * 0.25} strokeLinecap="round"/>
-          {/* 脳幹 */}
-          <path d="M 76,138 C 74,144 74,150 76,155 L 84,155 C 86,150 86,144 84,138 Z"
-            fill="#020310" stroke={color} strokeWidth={1} strokeOpacity={0.3 + act * 0.3}/>
-
-          {/* ─── ニューラルネットワーク（クリップ内） ─── */}
-          <g clipPath={`url(#${clipId})`}>
-
-            {/* シナプス接続ライン + 信号パーティクル */}
-            {edges.map(([a, b], i) => {
-              const [x1, y1] = nodes[a], [x2, y2] = nodes[b]
-              const dur   = 1.2 + (i % 6) * 0.32
-              const delay = (i % 13) * 0.18
-              return (
-                <g key={i}>
-                  {/* 常時表示の薄いベースライン */}
-                  <line x1={x1} y1={y1} x2={x2} y2={y2}
-                    stroke={color} strokeWidth={0.45}
-                    strokeOpacity={0.08 + act * 0.26}/>
-                  {/* 走る信号（半数のエッジに） */}
-                  {i % 2 === 0 && (
-                    <line x1={x1} y1={y1} x2={x2} y2={y2}
-                      stroke={color} strokeWidth={1.5}
-                      strokeDasharray="3 300"
-                      strokeOpacity={0.5 + act * 0.4}
-                      filter={`url(#${glowId})`}
-                      style={{ animation: `flowN ${dur}s ${delay}s linear infinite` }}/>
-                  )}
-                </g>
-              )
-            })}
-
-            {/* ニューロンノード */}
-            {nodes.map(([x, y], i) => {
-              const tier  = i % 5 === 0 ? 'A' : i % 3 === 0 ? 'B' : 'C'
-              const r     = tier === 'A' ? 2.4 : tier === 'B' ? 1.7 : 1.1
-              const dur   = 1.0 + (i % 7) * 0.28
-              const delay = (i % 11) * 0.17
-              const baseOp = tier === 'A' ? 0.55 : tier === 'B' ? 0.35 : 0.2
-              return (
-                <g key={i} filter={`url(#${glowId})`}>
-                  {/* リップル（Aノードのみ） */}
-                  {tier === 'A' && (
-                    <circle cx={x} cy={y} r={5} fill="none" stroke={color} strokeWidth={0.7}
-                      style={{
-                        transformOrigin: `${x}px ${y}px`,
-                        animation: `rippleN ${dur * 1.9}s ${delay}s ease-out infinite`,
-                        opacity: 0.25 + act * 0.5,
-                      }}/>
-                  )}
-                  {/* コアドット */}
-                  <circle cx={x} cy={y} r={r} fill={color}
-                    style={{
-                      transformOrigin: `${x}px ${y}px`,
-                      animation: `pulseN ${dur}s ${delay}s ease-in-out infinite`,
-                      opacity: baseOp + act * 0.45,
-                    }}/>
-                </g>
-              )
-            })}
-          </g>
-
-          {/* 外枠グロー */}
-          <path d={outerPath} fill="none" stroke={color} strokeWidth={1.5}
-            opacity={0.4 + act * 0.4} filter={`url(#${glowId})`}/>
-          <path d={outerPath} fill="none" stroke={color} strokeWidth={6}
-            opacity={0.05 + act * 0.08} filter={`url(#${glowId}h)`}/>
-        </svg>
-
-        {/* スコアオーバーレイ */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+        {/* スコアオーバーレイ（脳の中央） */}
+        <div style={{
+          position: 'absolute', top: 26, left: 26, width: 228, height: 228,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
           <div style={{
             fontSize: 48, fontWeight: 800, color: '#fff', lineHeight: 1,
-            textShadow: `0 0 22px ${color}, 0 0 55px ${color}55, 0 2px 8px rgba(0,0,0,0.98)`,
+            textShadow: `0 0 24px ${color}, 0 0 60px ${color}66, 0 2px 8px rgba(0,0,0,0.99)`,
           }}>
             {level}
           </div>
-          <div style={{
-            fontSize: 12, color, fontWeight: 700, marginTop: 6,
-            letterSpacing: '0.1em', textShadow: `0 0 14px ${color}`,
-          }}>
-            ノイズ量
+          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 6, letterSpacing: '0.14em', textShadow: `0 0 14px ${color}` }}>
+            NOISE
           </div>
         </div>
       </div>
 
       <div style={{
-        padding: '7px 28px', borderRadius: 24,
-        background: `${color}14`, color, fontSize: 16, fontWeight: 700,
+        padding: '6px 28px', borderRadius: 24,
+        background: `${color}12`, color, fontSize: 15, fontWeight: 700,
         border: `1px solid ${color}44`, letterSpacing: '0.5px',
         boxShadow: `0 0 18px ${color}28`,
       }}>
         {state}
       </div>
-
-      <style>{`
-        @keyframes flowN {
-          from { stroke-dashoffset: 0;    }
-          to   { stroke-dashoffset: -303; }
-        }
-        @keyframes pulseN {
-          0%, 100% { transform: scale(0.7);  }
-          50%       { transform: scale(1.5);  }
-        }
-        @keyframes rippleN {
-          0%   { transform: scale(1);   opacity: 0.7; }
-          100% { transform: scale(4.5); opacity: 0;   }
-        }
-      `}</style>
     </div>
   )
 }
 
-function BalanceMap({ balance, dominant, isDark }: { balance: Record<BalanceKey, number>; dominant: BalanceKey | null; isDark: boolean }) {
+function BalanceMap({ balance, dominant, isDark, fillColor }: {
+  balance: Record<BalanceKey, number>
+  dominant: BalanceKey | null
+  isDark: boolean
+  fillColor?: string
+}) {
   const keys = Object.keys(balance) as BalanceKey[]
-  const sorted = [...keys].sort((a, b) => balance[b] - balance[a])
-
-  // Radar
-  const cx = 130, cy = 120, maxR = 82, labelR = 106
+  const cx = 140, cy = 130, maxR = 96, labelR = 124
   const n = keys.length
   const angle = (i: number) => (i * 2 * Math.PI / n) - Math.PI / 2
   const pt = (r: number, i: number) => ({ x: cx + r * Math.cos(angle(i)), y: cy + r * Math.sin(angle(i)) })
   const gridColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'
+  const fill = dominant ? BALANCE_COLORS[dominant] : (fillColor ?? '#7c6aef')
   const dataPath = keys.map((k, i) => {
     const p = pt((balance[k] / 100) * maxR, i)
     return `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
   }).join(' ') + 'Z'
+  // 高負荷ゾーン(70%)の多角形
+  const dangerPts = keys.map((_, i) => { const p = pt(0.70 * maxR, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
 
   return (
-    <div>
-      {/* Radar Chart */}
-      <svg viewBox="0 0 260 240" style={{ width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' }}>
-        <defs>
-          <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#7c6aef" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#7c6aef" stopOpacity="0.05" />
-          </radialGradient>
-        </defs>
-        {[25, 50, 75, 100].map(lv => {
-          const pts = keys.map((_, i) => { const p = pt((lv / 100) * maxR, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
-          return <polygon key={lv} points={pts} fill={lv < 100 ? (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)') : 'none'}
-            stroke={gridColor} strokeWidth={lv === 100 ? 1.5 : 0.8} />
-        })}
-        {[0, 25, 50, 75].map(lv => (
-          <text key={lv} x={cx + 4} y={cy - (lv / 100) * maxR - 2} fontSize={7}
-            fill={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'} textAnchor="start">{lv}</text>
-        ))}
-        {keys.map((_, i) => {
-          const p = pt(maxR, i)
-          return <line key={i} x1={cx} y1={cy} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} stroke={gridColor} strokeWidth={0.8} />
-        })}
-        <path d={dataPath} fill="url(#radarFill)" stroke="#7c6aef" strokeWidth={2.5} strokeLinejoin="round" />
-        {keys.map((k, i) => {
-          const r = (balance[k] / 100) * maxR
-          const p = pt(r, i)
-          const color = BALANCE_COLORS[k]
-          const isMain = k === dominant
-          return (
-            <g key={i}>
-              <circle cx={p.x} cy={p.y} r={isMain ? 7 : 5} fill={color} stroke={isDark ? '#08090f' : '#fff'} strokeWidth={2} />
-              {isMain && <circle cx={p.x} cy={p.y} r={11} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray="3 2" />}
-            </g>
-          )
-        })}
-        {keys.map((k, i) => {
-          const p = pt(labelR, i)
-          const isMain = k === dominant
-          const color = isMain ? BALANCE_COLORS[k] : (isDark ? 'rgba(255,255,255,0.55)' : '#4a4a60')
-          const label = k.replace('過多', '').replace('ループ', '').replace('不足', '')
-          return (
-            <text key={i} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle"
-              fontSize={isMain ? 11.5 : 10} fontWeight={isMain ? 800 : 500} fill={color}>
-              {label}
-            </text>
-          )
-        })}
-      </svg>
+    <svg viewBox="0 0 280 260" style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
+      <defs>
+        <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={fill} stopOpacity="0.42" />
+          <stop offset="100%" stopColor={fill} stopOpacity="0.07" />
+        </radialGradient>
+      </defs>
 
-      {/* Bar chart breakdown */}
-      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 9 }}>
-        {sorted.map(k => {
-          const val = balance[k]
-          const color = BALANCE_COLORS[k]
-          const isMain = k === dominant
-          return (
-            <div key={k}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: isMain ? 700 : 500, color: isMain ? color : 'var(--text-sub)' }}>{k}</span>
-                  {isMain && <span style={{ fontSize: 9, fontWeight: 700, color, background: `${color}18`, padding: '1px 6px', borderRadius: 8, border: `1px solid ${color}30` }}>主要因</span>}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color }}>{val}</span>
+      {/* グリッド多角形 */}
+      {[25, 50, 75, 100].map(lv => {
+        const pts = keys.map((_, i) => { const p = pt((lv / 100) * maxR, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
+        return <polygon key={lv} points={pts} fill="none" stroke={gridColor} strokeWidth={lv === 100 ? 1.4 : 0.7} />
+      })}
+
+      {/* 高負荷ゾーン(70%以上)の網掛け */}
+      <polygon points={dangerPts} fill="rgba(239,68,68,0.07)" stroke="rgba(239,68,68,0.28)" strokeWidth={0.9} strokeDasharray="4 2" />
+
+      {/* グリッドラベル */}
+      {[25, 50, 75].map(lv => (
+        <text key={lv} x={cx + 4} y={cy - (lv / 100) * maxR - 3} fontSize={8}
+          fill={lv === 75 ? 'rgba(239,68,68,0.55)' : (isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)')}
+          textAnchor="start" fontWeight={lv === 75 ? 700 : 400}>
+          {lv === 75 ? '高負荷' : lv}
+        </text>
+      ))}
+
+      {/* 軸線 — カテゴリ色 */}
+      {keys.map((k, i) => {
+        const p = pt(maxR, i)
+        return <line key={i} x1={cx} y1={cy} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)}
+          stroke={BALANCE_COLORS[k]} strokeWidth={0.7} opacity={0.35} />
+      })}
+
+      {/* データエリア */}
+      <path d={dataPath} fill="url(#radarFill)" stroke={fill} strokeWidth={2.5} strokeLinejoin="round" />
+
+      {/* データポイント — カテゴリ色 */}
+      {keys.map((k, i) => {
+        const r = (balance[k] / 100) * maxR
+        const p = pt(r, i)
+        const color = BALANCE_COLORS[k]
+        const isMain = k === dominant
+        return (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r={isMain ? 7 : 5} fill={color} stroke={isDark ? '#08090f' : '#fff'} strokeWidth={2} />
+            {isMain && <circle cx={p.x} cy={p.y} r={12} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray="3 2" />}
+            {balance[k] >= 70 && !isMain && (
+              <circle cx={p.x} cy={p.y} r={8} fill="none" stroke="rgba(239,68,68,0.5)" strokeWidth={1} />
+            )}
+          </g>
+        )
+      })}
+
+      {/* ラベル — フルネーム・カテゴリ色 */}
+      {keys.map((k, i) => {
+        const p = pt(labelR, i)
+        const isMain = k === dominant
+        const color = isMain ? BALANCE_COLORS[k] : (isDark ? 'rgba(255,255,255,0.52)' : '#4a4a60')
+        return (
+          <text key={i} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle"
+            fontSize={isMain ? 11 : 9.5} fontWeight={isMain ? 800 : 500} fill={color}>
+            {k}
+          </text>
+        )
+      })}
+    </svg>
+  )
+}
+
+function CategoryAnalysis({ balance, dominant, isDark }: { balance: Record<BalanceKey, number>; dominant: BalanceKey | null; isDark: boolean }) {
+  const sorted = (Object.entries(balance) as [BalanceKey, number][]).sort(([, a], [, b]) => b - a)
+  const defaultBg  = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
+  const defaultBdr = 'transparent'
+
+  return (
+    <div className="ca-grid">
+      {sorted.map(([key, val]) => {
+        const color  = BALANCE_COLORS[key]
+        const isMain = key === dominant
+        const lv = val >= 70
+          ? { label: '高い', bg: 'rgba(239,68,68,0.14)', color: '#f87171' }
+          : val >= 40
+          ? { label: '普通', bg: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)', color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(0,0,0,0.32)' }
+          : { label: '低い', bg: 'rgba(74,222,128,0.12)', color: '#4ade80' }
+        return (
+          <div key={key} className="ca-item" style={{
+            background: isMain ? `${color}0d` : defaultBg,
+            border: `1px solid ${isMain ? `${color}28` : defaultBdr}`,
+          }}>
+            <div className="ca-item-head">
+              <div className="ca-item-labels">
+                <span className="ca-item-name" style={{ fontWeight: isMain ? 700 : 500, color: isMain ? color : (isDark ? 'rgba(255,255,255,0.68)' : '#4a4a60') }}>
+                  {key}
+                </span>
+                {isMain && (
+                  <span className="ca-badge-main" style={{ color, background: `${color}1a`, border: `1px solid ${color}35` }}>
+                    主要因
+                  </span>
+                )}
+                <span className="ca-badge-level" style={{ color: lv.color, background: lv.bg }}>
+                  {lv.label}
+                </span>
               </div>
-              <div style={{ height: 7, background: isDark ? 'rgba(255,255,255,0.1)' : '#eff0f6', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 4, transition: 'width 1s ease' }} />
-              </div>
+              <span className="ca-score" style={{ color }}>{val}</span>
             </div>
-          )
-        })}
-      </div>
+            <div className="ca-bar-track" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : '#eff0f6' }}>
+              <div className="ca-bar-fill" style={{ width: `${val}%`, background: color, opacity: isMain ? 1 : 0.55 }} />
+            </div>
+            <p className="ca-desc">{BALANCE_DESCRIPTIONS[key]}</p>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -482,114 +406,222 @@ export default function DetoxPage() {
 
   if (analysis) {
     return (
-      <div style={{ background: '#0d0f1a', minHeight: '100vh' }}>
+      <div className="sr-wrap">
+        <style>{`
+          /* ─── Result Screen ─────────────────────────────── */
+          .sr-wrap { background: #0d0f1a; min-height: 100vh; }
+
+          /* Header */
+          .sr-hdr { background: #0d0f1a; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 22px 20px 18px; }
+          .sr-hdr-in { max-width: 800px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+          .sr-section-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 2.5px; text-transform: uppercase; }
+          .sr-state-name { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+          .sr-hdr-time { font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; }
+          .sr-cs-num { font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+          .sr-cs-denom { font-size: 14px; color: rgba(255,255,255,0.3); font-weight: 600; }
+
+          /* Body */
+          .sr-body { max-width: 800px; margin: 0 auto; padding: 16px 16px 80px; display: flex; flex-direction: column; gap: 12px; }
+
+          /* Cards */
+          .sr-card { background: #161820; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 18px 16px; }
+          .sr-card-head { margin-bottom: 14px; }
+          .sr-card-head p { font-size: 11px; color: rgba(255,255,255,0.25); margin: 4px 0 0; line-height: 1.5; }
+
+          /* Brain row */
+          .sr-brain-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+          .sr-brain-side { flex-shrink: 0; display: flex; justify-content: center; }
+          .sr-stat-side { flex: 1; min-width: 200px; }
+          .sr-state-desc { font-size: 12.5px; line-height: 1.7; margin: 0 0 14px; opacity: 0.92; }
+          .sr-summary { font-size: 13.5px; color: rgba(255,255,255,0.78); line-height: 2.05; margin: 0 0 16px; }
+          .sr-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+          .sr-mini-box { background: rgba(255,255,255,0.045); border-radius: 10px; padding: 10px 12px; }
+          .sr-mini-key { font-size: 9px; color: rgba(255,255,255,0.28); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+          .sr-mini-val { font-size: 22px; font-weight: 800; line-height: 1; }
+          .sr-mini-sub { font-size: 10px; margin-top: 5px; font-weight: 600; }
+          .sr-dominant { padding: 11px 14px; border-radius: 10px; }
+          .sr-dominant-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0 4px; }
+          .sr-dominant-name { font-size: 15px; font-weight: 700; }
+          .sr-dominant-score { font-size: 22px; font-weight: 800; }
+          .sr-dominant-desc { font-size: 11.5px; color: rgba(255,255,255,0.42); margin: 0; line-height: 1.6; }
+
+          /* Category grid */
+          .ca-grid { display: flex; flex-direction: column; gap: 10px; }
+          .ca-item { padding: 12px 14px; border-radius: 12px; }
+          .ca-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+          .ca-item-labels { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+          .ca-item-name { font-size: 13px; }
+          .ca-badge-main { font-size: 9px; font-weight: 800; border-radius: 6px; padding: 2px 7px; }
+          .ca-badge-level { font-size: 9px; font-weight: 700; border-radius: 6px; padding: 2px 7px; }
+          .ca-score { font-size: 18px; font-weight: 800; }
+          .ca-bar-track { height: 5px; border-radius: 3px; margin-bottom: 8px; }
+          .ca-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+          .ca-desc { font-size: 11.5px; margin: 0; line-height: 1.6; color: rgba(255,255,255,0.38); }
+
+          /* Advice */
+          .sr-advice-intro { font-size: 11.5px; color: rgba(255,255,255,0.3); margin: 4px 0 16px; line-height: 1.6; }
+          .sr-advice-list { display: flex; flex-direction: column; gap: 14px; }
+          .sr-advice-item { display: flex; gap: 13px; align-items: flex-start; }
+          .sr-advice-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 10px; font-weight: 800; }
+          .sr-advice-text { font-size: 14px; color: rgba(255,255,255,0.82); line-height: 1.9; margin: 0; }
+
+          /* Buttons */
+          .sr-btn-row { display: flex; gap: 10px; padding-top: 6px; }
+          .sr-btn-reset { flex: 1; padding: 13px 0; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+          .sr-btn-save { flex: 2; padding: 13px 0; border-radius: 10px; background: #4f46e5; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+          .sr-btn-save:hover { background: #5b52f5; }
+
+          /* PC breakpoint */
+          @media (min-width: 640px) {
+            .sr-hdr { padding: 28px 32px 22px; }
+            .sr-state-name { font-size: 32px; }
+            .sr-cs-num { font-size: 58px; }
+            .sr-cs-denom { font-size: 17px; }
+            .sr-body { padding: 20px 32px 80px; gap: 16px; }
+            .sr-card { padding: 24px 26px; }
+            /* 段落間隔 */
+            .sr-state-desc { font-size: 13.5px; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+            .sr-summary { font-size: 15px; margin-bottom: 20px; }
+            .sr-mini-val { font-size: 26px; }
+            .sr-mini-sub { font-size: 11px; }
+            .sr-dominant-name { font-size: 16px; }
+            .sr-dominant-score { font-size: 24px; }
+            .sr-dominant-desc { font-size: 12px; }
+            .ca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            .ca-item-name { font-size: 14px; }
+            .ca-score { font-size: 20px; }
+            .ca-desc { font-size: 12px; line-height: 1.7; }
+            .sr-advice-intro { font-size: 12.5px; margin-bottom: 20px; }
+            .sr-advice-list { gap: 20px; }
+            .sr-advice-item { align-items: flex-start; gap: 16px; }
+            .sr-advice-num { width: 26px; height: 26px; font-size: 11px; margin-top: 2px; }
+            .sr-advice-text { font-size: 15px; line-height: 1.95; }
+            .sr-btn-reset, .sr-btn-save { padding: 15px 0; font-size: 15px; border-radius: 12px; }
+          }
+
+          /* Very small phones */
+          @media (max-width: 360px) {
+            .sr-hdr-in { flex-direction: column; align-items: flex-start; }
+            .sr-stat-side { min-width: 100%; }
+            .sr-cs-num { font-size: 38px; }
+          }
+
+          @keyframes dtSpin { to { transform: rotate(360deg) } }
+        `}</style>
 
         {/* ── 結果ヘッダー ── */}
-        <div style={{ background: '#0d0f1a', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '28px 20px 20px' }}>
-          <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div className="sr-hdr">
+          <div className="sr-hdr-in">
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>Brain Scan Result</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 28, fontWeight: 900, color: stateColor, letterSpacing: '-1px' }}>{analysis.noise_state}</span>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
+              <div className="sr-section-label" style={{ marginBottom: 8 }}>Brain Scan Result</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span className="sr-state-name" style={{ color: stateColor }}>{analysis.noise_state}</span>
+                <span className="sr-hdr-time">
                   {new Date().toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>Clarity Score</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                <span style={{ fontSize: 56, fontWeight: 900, color: stateColor, lineHeight: 1, letterSpacing: '-2px' }}>{analysis.clarity_score}</span>
-                <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>/100</span>
+              <div className="sr-section-label" style={{ marginBottom: 5 }}>Clarity Score</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span className="sr-cs-num" style={{ color: stateColor }}>{analysis.clarity_score}</span>
+                <span className="sr-cs-denom">/100</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '20px 16px 60px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="sr-body">
 
-          {/* ── 脳ゲージ + 状態説明 ── */}
-          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '24px 20px' }}>
-            <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <div style={{ flexShrink: 0 }}>
+          {/* ── 脳ゲージ + 状態詳細 ── */}
+          <div className="sr-card">
+            <div className="sr-brain-row">
+              <div className="sr-brain-side">
                 <BrainGauge level={analysis.noise_level} state={analysis.noise_state} />
               </div>
-              <div style={{ flex: 1, minWidth: 220 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14 }}>Status</div>
-                <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 6, marginBottom: 18 }}>
-                  {analysis.summary.split('。').filter(Boolean).map((s, i) => (
-                    <p key={i} style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', lineHeight: 1.85, margin: 0 }}>{s}。</p>
+              <div className="sr-stat-side">
+                <div className="sr-section-label" style={{ marginBottom: 10 }}>Status</div>
+
+                <p className="sr-state-desc" style={{ color: stateColor }}>
+                  {STATE_DESCRIPTIONS[analysis.noise_state].split('。').filter(Boolean).map((s, i, arr) => (
+                    <Fragment key={i}>{s}。{i < arr.length - 1 && <br />}</Fragment>
                   ))}
-                </div>
-                {/* ノイズバー */}
-                <div style={{ marginBottom: 6 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>NOISE LEVEL</span>
-                    <span style={{ fontSize: 11, color: stateColor, fontWeight: 700 }}>{analysis.noise_level}</span>
+                </p>
+
+                <p className="sr-summary">
+                  {analysis.summary.split('。').filter(Boolean).map((s, i, arr) => (
+                    <Fragment key={i}>{s}。{i < arr.length - 1 && <br />}</Fragment>
+                  ))}
+                </p>
+
+                <div className="sr-mini-grid">
+                  <div className="sr-mini-box">
+                    <div className="sr-mini-key">Noise Level</div>
+                    <div className="sr-mini-val" style={{ color: stateColor }}>{analysis.noise_level}</div>
+                    <div className="sr-mini-sub" style={{ color: noiseLevelLabel(analysis.noise_level).color }}>
+                      {noiseLevelLabel(analysis.noise_level).label}
+                    </div>
                   </div>
-                  <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 4 }}>
-                    <div style={{ height: '100%', width: `${analysis.noise_level}%`, background: stateColor, borderRadius: 4, transition: 'width 1s ease' }} />
+                  <div className="sr-mini-box">
+                    <div className="sr-mini-key">Clarity</div>
+                    <div className="sr-mini-val" style={{ color: '#4ade80' }}>{analysis.clarity_score}</div>
+                    <div className="sr-mini-sub" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                      {clarityLabel(analysis.clarity_score)}
+                    </div>
                   </div>
                 </div>
+
+                {analysis.dominant && (
+                  <div className="sr-dominant" style={{ background: `${BALANCE_COLORS[analysis.dominant]}0e`, border: `1px solid ${BALANCE_COLORS[analysis.dominant]}25` }}>
+                    <div className="sr-section-label">主要因</div>
+                    <div className="sr-dominant-row">
+                      <span className="sr-dominant-name" style={{ color: BALANCE_COLORS[analysis.dominant] }}>{analysis.dominant}</span>
+                      <span className="sr-dominant-score" style={{ color: BALANCE_COLORS[analysis.dominant] }}>{analysis.balance[analysis.dominant]}</span>
+                    </div>
+                    <p className="sr-dominant-desc">{BALANCE_DESCRIPTIONS[analysis.dominant]}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* ── カテゴリ内訳 ── */}
-          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 16 }}>Category Breakdown</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {(Object.entries(analysis.balance) as [BalanceKey, number][])
-                .sort(([,a],[,b]) => b - a)
-                .map(([key, val]) => {
-                  const color = BALANCE_COLORS[key]
-                  const isMain = key === analysis.dominant
-                  return (
-                    <div key={key}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <span style={{ fontSize: 13, fontWeight: isMain ? 700 : 400, color: isMain ? color : 'rgba(255,255,255,0.5)' }}>{key}</span>
-                          {isMain && <span style={{ fontSize: 9, fontWeight: 800, color, background: `${color}18`, border: `1px solid ${color}30`, borderRadius: 6, padding: '1px 6px', letterSpacing: '0.5px' }}>MAIN</span>}
-                        </div>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: isMain ? color : 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
-                      </div>
-                      <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
-                        <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 3, opacity: isMain ? 1 : 0.5, transition: 'width 1s ease' }} />
-                      </div>
-                    </div>
-                  )
-                })}
+          {/* ── カテゴリ分析 ── */}
+          <div className="sr-card">
+            <div className="sr-card-head">
+              <div className="sr-section-label">Category Analysis</div>
             </div>
+            <CategoryAnalysis balance={analysis.balance} dominant={analysis.dominant} isDark={true} />
           </div>
 
           {/* ── バランスマップ ── */}
-          <div style={{ background: '#161820', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>Balance Map</div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <BalanceMap balance={analysis.balance} dominant={analysis.dominant} isDark={true} />
+          <div className="sr-card">
+            <div className="sr-card-head">
+              <div className="sr-section-label">Balance Map</div>
+              <p>赤い破線より外側が高負荷ゾーンです</p>
             </div>
+            <BalanceMap balance={analysis.balance} dominant={analysis.dominant} isDark={true} fillColor={stateColor} />
           </div>
 
-          {/* ── アドバイス ── */}
-          <div style={{ background: '#161820', border: `1px solid ${stateColor}30`, borderRadius: 16, padding: '20px', borderLeft: `3px solid ${stateColor}` }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: stateColor, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14, opacity: 0.8 }}>AI Advice</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {analysis.advice.split('。').filter(Boolean).map((s, i) => (
-                <p key={i} style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.85, margin: 0 }}>{s}。</p>
+          {/* ── AIアドバイス ── */}
+          <div className="sr-card" style={{ borderLeft: `3px solid ${stateColor}` }}>
+            <div className="sr-section-label" style={{ color: stateColor, opacity: 0.85 }}>AI Advice</div>
+            <p className="sr-advice-intro">あなたが書いた内容をもとにした、今この瞬間へのアドバイスです</p>
+            <div className="sr-advice-list">
+              {analysis.advice.split('。').filter(s => s.trim()).map((s, i) => (
+                <div key={i} className="sr-advice-item">
+                  <div className="sr-advice-num" style={{ background: `${stateColor}18`, border: `1px solid ${stateColor}38`, color: stateColor }}>
+                    {i + 1}
+                  </div>
+                  <p className="sr-advice-text">{s}。</p>
+                </div>
               ))}
             </div>
           </div>
 
           {/* ── ボタン ── */}
-          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-            <button type="button" onClick={handleReset}
-              style={{ flex: 1, padding: '13px 0', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-              もう一度書く
-            </button>
-            <button type="button" onClick={handleSave}
-              style={{ flex: 2, padding: '13px 0', borderRadius: 10, background: '#4f46e5', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-              完了・保存
-            </button>
+          <div className="sr-btn-row">
+            <button type="button" onClick={handleReset} className="sr-btn-reset">もう一度書く</button>
+            <button type="button" onClick={handleSave} className="sr-btn-save">完了・保存</button>
           </div>
         </div>
       </div>
