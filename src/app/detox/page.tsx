@@ -347,6 +347,7 @@ export default function DetoxPage() {
   const [analysis, setAnalysis] = useState<BrainAnalysis | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isDemoFallback, setIsDemoFallback] = useState(false)
   const charCount = text.length
 
   const today = new Date().toISOString().split('T')[0]
@@ -366,6 +367,7 @@ export default function DetoxPage() {
 
   function handleDemo() {
     setAnalysis(DEMO_ANALYSIS)
+    setIsDemoFallback(false)
     setError('')
   }
 
@@ -380,6 +382,7 @@ export default function DetoxPage() {
     setLoading(true)
     setError('')
     setAnalysis(null)
+    setIsDemoFallback(false)
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -389,8 +392,9 @@ export default function DetoxPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setAnalysis(data.analysis)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '分析に失敗しました')
+    } catch {
+      setAnalysis(DEMO_ANALYSIS)
+      setIsDemoFallback(true)
     } finally {
       setLoading(false)
     }
@@ -400,6 +404,7 @@ export default function DetoxPage() {
     setText('')
     setAnalysis(null)
     setError('')
+    setIsDemoFallback(false)
   }
 
   const stateColor = NOISE_COLORS[analysis?.noise_state ?? ''] ?? '#6366f1'
@@ -523,6 +528,12 @@ export default function DetoxPage() {
             </div>
           </div>
         </div>
+
+        {isDemoFallback && (
+          <div className="sr-demo-banner">
+            AI分析サービスが現在利用できないため、サンプル結果を表示しています
+          </div>
+        )}
 
         <div className="sr-body">
 
