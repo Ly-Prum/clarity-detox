@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { DetoxSession, BrainAnalysis, CognitiveProfile, DiscoverySession } from './types'
+import type { DetoxSession, BrainAnalysis, CognitiveProfile, DiscoverySession, Todo } from './types'
 import { supabase } from './supabase'
 
 interface CurrentUser {
@@ -18,6 +18,7 @@ export interface DiagnosisResult {
 
 interface AppStore {
   sessions: DetoxSession[]
+  todos: Todo[]
   profile: CognitiveProfile | null
   colorTheme: string
   isAuthenticated: boolean
@@ -25,10 +26,14 @@ interface AppStore {
   diagnosisResults: DiagnosisResult[]
   discoverySessions: DiscoverySession[]
   setSessions: (sessions: DetoxSession[]) => void
+  setTodos: (todos: Todo[]) => void
   setDiscoverySessions: (sessions: DiscoverySession[]) => void
-  addSession: (input_text: string, analysis: BrainAnalysis) => void
+  addSession: (input_text: string, analysis: BrainAnalysis) => Promise<string>
   deleteSession: (id: string) => void
   clearSessions: () => void
+  addTodo: (todo: Omit<Todo, 'id' | 'user_id' | 'created_at'>) => void
+  toggleTodo: (id: string) => void
+  deleteTodo: (id: string) => void
   setProfile: (profile: CognitiveProfile) => void
   setColorTheme: (color: string) => void
   applyColorTheme: (color: string) => void
@@ -43,6 +48,7 @@ export const useStore = create<AppStore>()(
   persist(
     (set, get) => ({
       sessions: [],
+      todos: [],
       profile: null,
       colorTheme: 'sand',
       isAuthenticated: false,
@@ -50,6 +56,7 @@ export const useStore = create<AppStore>()(
       diagnosisResults: [],
       discoverySessions: [],
       setSessions: (sessions) => set({ sessions }),
+      setTodos: (todos) => set({ todos }),
       setDiscoverySessions: (discoverySessions) => set({ discoverySessions }),
       addSession: (input_text, analysis) => {
         const session: DetoxSession = {
@@ -63,6 +70,7 @@ export const useStore = create<AppStore>()(
         supabase.from('sessions').upsert(session).then(({ error }) => {
           if (error) console.error('Supabase save error:', error)
         })
+        return Promise.resolve(session.id)
       },
       deleteSession: (id) => {
         set(s => ({ sessions: s.sessions.filter(s => s.id !== id) }))
@@ -71,6 +79,33 @@ export const useStore = create<AppStore>()(
         })
       },
       clearSessions: () => set({ sessions: [] }),
+      addTodo: (todo) => {
+        const full: Todo = {
+          ...todo,
+          id: crypto.randomUUID(),
+          user_id: get().currentUser?.email ?? 'local',
+          created_at: new Date().toISOString(),
+        }
+        set(s => ({ todos: [full, ...s.todos] }))
+        supabase.from('todos').insert(full).then(({ error }) => {
+          if (error) console.error('Todo save error:', error)
+        })
+      },
+      toggleTodo: (id) => {
+        const todo = get().todos.find(t => t.id === id)
+        if (!todo) return
+        const completed = !todo.completed
+        set(s => ({ todos: s.todos.map(t => t.id === id ? { ...t, completed } : t) }))
+        supabase.from('todos').update({ completed }).eq('id', id).then(({ error }) => {
+          if (error) console.error('Todo toggle error:', error)
+        })
+      },
+      deleteTodo: (id) => {
+        set(s => ({ todos: s.todos.filter(t => t.id !== id) }))
+        supabase.from('todos').delete().eq('id', id).then(({ error }) => {
+          if (error) console.error('Todo delete error:', error)
+        })
+      },
       setProfile: (profile) => set({ profile }),
       setColorTheme: (colorTheme) => {
         set({ colorTheme })
@@ -112,6 +147,7 @@ export const useStore = create<AppStore>()(
       name: 'mind-detox-v1',
       partialize: (state) => ({
         sessions: state.sessions,
+        todos: state.todos,
         isAuthenticated: state.isAuthenticated,
         currentUser: state.currentUser,
         diagnosisResults: state.diagnosisResults,

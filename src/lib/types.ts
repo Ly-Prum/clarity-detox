@@ -14,14 +14,43 @@ export type BalanceKey =
   | '感情過多' | 'タスク過多' | '不安過多'
   | '情報過多' | '思考ループ' | '行動不足'
 
+export type ThoughtTag = 'タスク' | '感情' | '不安' | '人間関係' | 'アイデア' | 'その他'
+
+export interface TaggedItem {
+  id: string
+  text: string
+  tag: ThoughtTag
+  drawer_id?: string
+  as_todo: boolean
+}
+
+export interface OrganizedGroup {
+  theme: string
+  items: string[]
+}
+
 export interface BrainAnalysis {
-  noise_level: number       // 0-100 (100 = most noisy)
+  noise_level: number
   noise_state: NoiseState
-  balance: Record<BalanceKey, number>  // 0-100 each
+  balance: Record<BalanceKey, number>
   dominant: BalanceKey | null
-  summary: string           // 1-2 sentence description
-  advice: string            // gentle one-line suggestion
-  clarity_score: number     // 0-100 (100 = fully clear)
+  summary: string
+  advice: string
+  clarity_score: number
+  extracted_items: string[]
+  organized_groups: OrganizedGroup[]
+  tagged_items: TaggedItem[]
+}
+
+export interface Todo {
+  id: string
+  user_id: string
+  text: string
+  tag: ThoughtTag
+  drawer_id?: string
+  session_id?: string
+  completed: boolean
+  created_at: string
 }
 
 export interface DetoxSession {
